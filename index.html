@@ -654,6 +654,39 @@
     .gallery-modal-panel{padding:24px 18px;}
     .gallery-album-image-wrap{height:220px;}
   }
+
+  /* ---------- ABOUT MODAL ---------- */
+  .about-modal-panel{max-width:720px;}
+  .about-title{
+    font-size:clamp(1.4rem, 2.6vw, 1.9rem); color:var(--bark); margin-bottom:22px;
+    padding-right:36px;
+  }
+  .about-content p{color:rgba(43,33,26,0.75); font-size:0.96rem; line-height:1.65; margin-bottom:16px;}
+  .about-emphasis{
+    font-family:'Bricolage Grotesque'; font-weight:600; font-size:1.05rem !important;
+    color:var(--bark) !important; margin-top:22px;
+  }
+  .about-divider{height:1px; background:var(--line); margin:28px 0;}
+  .about-subhead{font-size:1.15rem; color:var(--terracotta); margin-bottom:10px; margin-top:22px;}
+  .about-values-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:14px;}
+  .about-value-item{display:flex; gap:12px; align-items:flex-start;}
+  .about-value-emoji{font-size:1.3rem; flex-shrink:0; line-height:1.3;}
+  .about-value-item strong{display:block; font-size:0.95rem; color:var(--bark); margin-bottom:3px;}
+  .about-value-item p{font-size:0.86rem !important; margin-bottom:0 !important; color:rgba(43,33,26,0.65);}
+  .about-why-list{margin-top:14px; padding-left:0; list-style:none;}
+  .about-why-list li{
+    position:relative; padding-left:26px; margin-bottom:10px;
+    font-size:0.94rem; color:rgba(43,33,26,0.75);
+  }
+  .about-why-list li::before{
+    content:'✓'; position:absolute; left:0; color:var(--terracotta); font-weight:700;
+  }
+  .about-founder-note{
+    font-style:italic; font-size:0.92rem !important; color:rgba(43,33,26,0.6) !important;
+  }
+  @media (max-width:600px){
+    .about-values-grid{grid-template-columns:1fr;}
+  }
 </style>
 </head>
 <body>
@@ -665,6 +698,7 @@
       <span>Tuwai Adventures</span>
     </a>
     <div class="nav-links">
+      <a href="#" onclick="openAboutModal(); return false;">About</a>
       <a href="#tours">Tours &amp; Safaris</a>
       <div class="nav-dropdown">
         <button class="nav-dropdown-trigger" aria-haspopup="true">Non-Tour Adventures <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -1015,6 +1049,7 @@
         </div>
         <div>
           <h5>Company</h5>
+          <a href="#" onclick="openAboutModal(); return false;">About</a>
           <a href="#process">How it works</a>
           <a href="#contact">Contact</a>
         </div>
@@ -1071,6 +1106,70 @@
       <h4 id="nonTourTitle"></h4>
       <p id="nonTourDesc"></p>
       <div class="gallery-thumbs" id="nonTourThumbs"><!-- filled by script --></div>
+    </div>
+  </div>
+</div>
+
+<div class="gallery-modal" id="aboutModal" role="dialog" aria-modal="true" aria-label="About Tuwai Adventures">
+  <div class="gallery-modal-backdrop" onclick="closeAboutModal()"></div>
+  <div class="gallery-modal-panel about-modal-panel">
+    <button type="button" class="gallery-close" onclick="closeAboutModal()" aria-label="Close about section">&times;</button>
+
+    <div class="about-content">
+      <div class="eyebrow" style="color:var(--terracotta); margin-bottom:10px;">About Tuwai Adventures</div>
+      <h3 class="about-title">More Than a Journey. A Story Worth Living.</h3>
+
+      <p>At Tuwai Adventures, we believe that the greatest souvenirs aren't bought—they're lived.</p>
+      <p>Born from a passion for Kenya's breathtaking landscapes, rich cultures, and untamed wildlife, we create experiences that inspire wonder, strengthen connections, and leave you with stories you'll tell for a lifetime.</p>
+      <p>Whether you're chasing the golden sunrise across the Maasai Mara, unwinding along the turquoise shores of Diani, escaping to a peaceful countryside retreat, or discovering hidden gems just a few hours from home, every journey with us is thoughtfully crafted to feel effortless, authentic, and unforgettable.</p>
+      <p>We believe travel isn't about ticking destinations off a list. It's about the laughter shared around a campfire, the silence of watching elephants cross the plains at dawn, the excitement of discovering somewhere new, and the memories that become part of who you are.</p>
+      <p>From solo travellers and couples to families, corporate retreats, and groups of friends, we are here to make every adventure seamless—from the moment you enquire to the moment you return home already dreaming of your next escape.</p>
+      <p class="about-emphasis">Because life is too beautiful to experience only through a screen.<br>Let's write your next story together.</p>
+
+      <div class="about-divider"></div>
+
+      <h4 class="about-subhead">Our Vision</h4>
+      <p>To become Africa's most trusted travel and experiences platform, connecting people with unforgettable adventures, authentic hospitality, and destinations that create lifelong memories.</p>
+
+      <h4 class="about-subhead">Our Mission</h4>
+      <p>To make extraordinary travel experiences accessible, effortless, and memorable by connecting travellers with carefully curated safaris, staycations, coastal escapes, cultural experiences, and adventure destinations across Kenya and beyond.</p>
+
+      <h4 class="about-subhead">Our Values</h4>
+      <div class="about-values-grid">
+        <div class="about-value-item">
+          <span class="about-value-emoji">🌿</span>
+          <div><strong>Authenticity</strong><p>We showcase destinations as they truly are, creating genuine experiences that celebrate nature, culture, and local communities.</p></div>
+        </div>
+        <div class="about-value-item">
+          <span class="about-value-emoji">🦁</span>
+          <div><strong>Adventure</strong><p>Every journey should spark curiosity, excitement, and unforgettable memories.</p></div>
+        </div>
+        <div class="about-value-item">
+          <span class="about-value-emoji">🤝</span>
+          <div><strong>Trust</strong><p>From transparent pricing to reliable service, we build relationships founded on honesty and excellence.</p></div>
+        </div>
+        <div class="about-value-item">
+          <span class="about-value-emoji">💚</span>
+          <div><strong>Sustainability</strong><p>We believe tourism should preserve the beauty of our destinations while supporting local communities and protecting wildlife for future generations.</p></div>
+        </div>
+        <div class="about-value-item">
+          <span class="about-value-emoji">✨</span>
+          <div><strong>Excellence</strong><p>From planning to the final destination, every detail matters.</p></div>
+        </div>
+      </div>
+
+      <h4 class="about-subhead">Why Travel With Tuwai Adventures?</h4>
+      <ul class="about-why-list">
+        <li>Curated safari, beach, staycation, and adventure experiences.</li>
+        <li>Trusted local expertise with personalised travel planning.</li>
+        <li>Flexible options for individuals, families, couples, and corporate groups.</li>
+        <li>Seamless booking and dedicated customer support.</li>
+        <li>Experiences designed to create stories—not just itineraries.</li>
+      </ul>
+
+      <div class="about-divider"></div>
+
+      <p class="about-founder-note">Founded in the vision and passion of our founder, Jane Muigai, we are steering day by day to new surroundings, creating and sharing memories and stories curved into our pages of history and a lifetime worth curving a long life smile into the old golden days.</p>
     </div>
   </div>
 </div>
@@ -1458,9 +1557,19 @@
     renderNonTourAlbum();
   }
 
+  function openAboutModal(){
+    document.getElementById('aboutModal').classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeAboutModal(){
+    document.getElementById('aboutModal').classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
   document.addEventListener('keydown', function(e){
     const modal = document.getElementById('galleryModal');
     const nonTourModal = document.getElementById('nonTourModal');
+    const aboutModal = document.getElementById('aboutModal');
     if(modal.classList.contains('is-open')){
       if(e.key === 'Escape') closeGallery();
       if(e.key === 'ArrowLeft' && document.getElementById('galleryAlbumView').style.display !== 'none') albumPrev();
@@ -1469,6 +1578,8 @@
       if(e.key === 'Escape') closeNonTourGallery();
       if(e.key === 'ArrowLeft') nonTourPrev();
       if(e.key === 'ArrowRight') nonTourNext();
+    } else if(aboutModal.classList.contains('is-open')){
+      if(e.key === 'Escape') closeAboutModal();
     }
   });
 
