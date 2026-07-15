@@ -139,7 +139,7 @@
     position:relative;
   }
   .hero p.lede{
-    margin-top:24px; font-size:1.08rem; max-width:480px; color:rgba(247,241,230,0.78);
+    margin-top:18px; font-size:0.92rem; line-height:1.6; max-width:480px; color:rgba(247,241,230,0.75);
   }
   .hero-ctas{display:flex; gap:14px; margin-top:36px; flex-wrap:wrap;}
   .call-widget{
@@ -271,6 +271,7 @@
     height:80px; position:relative;
     display:flex; align-items:flex-end; padding:14px;
     overflow:hidden;
+    background-size:cover; background-position:center;
   }
   .dest-visual::after{
     content:''; position:absolute; inset:0; z-index:1;
@@ -776,7 +777,7 @@
   <div class="roll-track-wrap">
     <div class="roll-track">
       <div class="dest-card">
-        <div class="dest-visual">
+        <div class="dest-visual" data-dest-package="0">
           <span>Tour & Safari</span>
         </div>
         <div class="dest-body">
@@ -785,7 +786,7 @@
         </div>
       </div>
       <div class="dest-card">
-        <div class="dest-visual">
+        <div class="dest-visual" data-dest-package="1">
           <span>Tour & Safari</span>
         </div>
         <div class="dest-body">
@@ -794,7 +795,7 @@
         </div>
       </div>
       <div class="dest-card">
-        <div class="dest-visual">
+        <div class="dest-visual" data-dest-package="2">
           <span>Tour & Safari</span>
         </div>
         <div class="dest-body">
@@ -803,7 +804,7 @@
         </div>
       </div>
       <div class="dest-card">
-        <div class="dest-visual">
+        <div class="dest-visual" data-dest-package="3">
           <span>Tour & Safari</span>
         </div>
         <div class="dest-body">
@@ -812,7 +813,7 @@
         </div>
       </div>
       <div class="dest-card">
-        <div class="dest-visual">
+        <div class="dest-visual" data-dest-package="0">
           <span>Tour & Safari</span>
         </div>
         <div class="dest-body">
@@ -821,7 +822,7 @@
         </div>
       </div>
       <div class="dest-card">
-        <div class="dest-visual">
+        <div class="dest-visual" data-dest-package="1">
           <span>Tour & Safari</span>
         </div>
         <div class="dest-body">
@@ -830,7 +831,7 @@
         </div>
       </div>
       <div class="dest-card">
-        <div class="dest-visual">
+        <div class="dest-visual" data-dest-package="2">
           <span>Tour & Safari</span>
         </div>
         <div class="dest-body">
@@ -839,7 +840,7 @@
         </div>
       </div>
       <div class="dest-card">
-        <div class="dest-visual">
+        <div class="dest-visual" data-dest-package="3">
           <span>Tour & Safari</span>
         </div>
         <div class="dest-body">
@@ -1745,6 +1746,13 @@
           PACKAGES[pIndex].realPhotoUrls = PACKAGES[pIndex].realPhotoUrls || {};
           PACKAGES[pIndex].realPhotoUrls[phIndex] = url;
           if(typeof window.refreshGalleryThumbs === 'function') window.refreshGalleryThumbs();
+        }
+        // The "Most visited" carousel reuses each package's first photo,
+        // so Maasai Mara/Amboseli/Diani Coast/Tsavo don't need a separate upload.
+        if(phIndex === 0){
+          document.querySelectorAll('.dest-visual[data-dest-package="' + pIndex + '"]').forEach(function(el){
+            el.style.backgroundImage = 'url("' + url + '")';
+          });
         }
       }
     }
