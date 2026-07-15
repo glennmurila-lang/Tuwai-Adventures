@@ -1756,6 +1756,23 @@
     }).catch(function(err){
       console.warn('Could not load live images, using built-in fallbacks.', err);
     });
+
+    db.collection('packages').get().then(function(snapshot){
+      let changed = false;
+      snapshot.forEach(function(doc){
+        const m = /^pkg-(\d+)$/.exec(doc.id);
+        if(!m) return;
+        const pIndex = parseInt(m[1], 10);
+        const data = doc.data();
+        if(typeof PACKAGES !== 'undefined' && PACKAGES[pIndex]){
+          if(data.name){ PACKAGES[pIndex].name = data.name; changed = true; }
+          if(data.blurb){ PACKAGES[pIndex].blurb = data.blurb; changed = true; }
+        }
+      });
+      if(changed && typeof window.refreshGalleryThumbs === 'function') window.refreshGalleryThumbs();
+    }).catch(function(err){
+      console.warn('Could not load saved package text, using built-in defaults.', err);
+    });
   })();
 </script>
 
