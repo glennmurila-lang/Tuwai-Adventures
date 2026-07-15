@@ -144,6 +144,10 @@
     <p class="section-sub">The key visuals used across the homepage.</p>
     <div class="slot-grid" id="mainSlotGrid"><!-- filled by script --></div>
 
+    <h2 class="section-title">Testimonials</h2>
+    <p class="section-sub">Up to 6 reviews shown in the scrolling "Word from the road" strip. Leave a slot's name blank to skip it.</p>
+    <div id="testimonialSlots"><!-- filled by script --></div>
+
     <h2 class="section-title">Tours &amp; Safaris gallery photos</h2>
     <p class="section-sub">Click a package to open it and upload its 3 photos. Tip: "Photo 1" for Maasai Mara Classic, Amboseli Explorer, Diani Coast Escape, and Tsavo Wilderness also shows automatically in the homepage's "Most visited" scrolling strip — no need to upload it twice.</p>
     <div id="packageGroups"><!-- filled by script --></div>
@@ -249,9 +253,11 @@
   // ---------- Dashboard rendering ----------
   function initDashboard(){
     renderMainSlots();
+    renderTestimonialSlots();
     renderPackageGroups();
     loadAllSlotData();
     loadPackageTextData();
+    loadTestimonialData();
   }
 
   function loadPackageTextData(){
@@ -359,6 +365,87 @@
     }).catch(function(err){
       statusEl.textContent = 'Failed: ' + err.message;
       statusEl.className = 'slot-status err';
+    });
+  }
+
+  // ---------- Testimonials ----------
+  // Defaults match what's currently live on the site. Slots 4-5 start
+  // empty so there's room to add more without touching any code.
+  const DEFAULT_TESTIMONIALS = [
+    { name: "Ann", role: "Nairobi resident", quote: "Pleasure working and being served with team Tuwai. A great professional experience all through." },
+    { name: "Peter", role: "Nairobi resident", quote: "Seamless experience! Fantastic. Awesome selections and guide. Loved the customer service experience." },
+    { name: "Johnson Scott", role: "Visiting from Europe", quote: "Was an abrupt call and went perfectly well. Late request and a fantastic work effort. Had an adventure to recall at the Nairobi National Park." },
+    { name: "Hillary", role: "Nairobi resident", quote: "From a referral to an experience to take me back. Thank you for your customer service and professionalism. Asante sana!" },
+    { name: "", role: "", quote: "" },
+    { name: "", role: "", quote: "" }
+  ];
+
+  function renderTestimonialSlots(){
+    const container = document.getElementById('testimonialSlots');
+    container.innerHTML = DEFAULT_TESTIMONIALS.map((t, i) => `
+      <div class="slot-card pkg-text-card" style="margin-bottom:14px;">
+        <div class="slot-body">
+          <div class="slot-label">Review ${i + 1}</div>
+          <div class="field">
+            <label for="testi-name-${i}">Name</label>
+            <input type="text" id="testi-name-${i}" value="${t.name.replace(/"/g,'&quot;')}" placeholder="e.g. Ann">
+          </div>
+          <div class="field">
+            <label for="testi-role-${i}">Role / location</label>
+            <input type="text" id="testi-role-${i}" value="${t.role.replace(/"/g,'&quot;')}" placeholder="e.g. Nairobi resident">
+          </div>
+          <div class="field">
+            <label for="testi-quote-${i}">Review text</label>
+            <input type="text" id="testi-quote-${i}" value="${t.quote.replace(/"/g,'&quot;')}" placeholder="What they said">
+          </div>
+          <div class="slot-upload-row">
+            <button class="slot-upload-btn" onclick="saveTestimonial(${i})">Save review</button>
+          </div>
+          <div class="slot-status" id="status-testi-${i}"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  function saveTestimonial(i){
+    const name = document.getElementById('testi-name-' + i).value.trim();
+    const role = document.getElementById('testi-role-' + i).value.trim();
+    const quote = document.getElementById('testi-quote-' + i).value.trim();
+    const statusEl = document.getElementById('status-testi-' + i);
+    if(!name || !quote){
+      statusEl.textContent = 'Needs at least a name and review text';
+      statusEl.className = 'slot-status err';
+      return;
+    }
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+    db.collection('testimonials').doc('t-' + i).set({
+      name: name, role: role, quote: quote,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function(){
+      statusEl.textContent = 'Saved \u2713';
+      statusEl.className = 'slot-status ok';
+    }).catch(function(err){
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'slot-status err';
+    });
+  }
+
+  function loadTestimonialData(){
+    db.collection('testimonials').get().then(function(snapshot){
+      snapshot.forEach(function(doc){
+        const m = /^t-(\d+)$/.exec(doc.id);
+        if(!m) return;
+        const i = parseInt(m[1], 10);
+        const data = doc.data();
+        const nameInput = document.getElementById('testi-name-' + i);
+        const roleInput = document.getElementById('testi-role-' + i);
+        const quoteInput = document.getElementById('testi-quote-' + i);
+        if(nameInput && data.name !== undefined) nameInput.value = data.name;
+        if(roleInput && data.role !== undefined) roleInput.value = data.role;
+        if(quoteInput && data.quote !== undefined) quoteInput.value = data.quote;
+      });
+    }).catch(function(err){
+      console.error('Failed to load saved testimonials:', err);
     });
   }
 
