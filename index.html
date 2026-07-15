@@ -1221,33 +1221,37 @@
 
 <script>
   // ============================================================
-  // TESTIMONIALS — edit this list to add, remove, or change reviews.
-  // Just edit the text below; nothing else on the page needs to change.
+  // TESTIMONIALS — these defaults are used until Jane saves her own
+  // via the dashboard (which then take over automatically).
   //   quote     = the review text
-  //   name      = person's name (e.g. "James K.")
-  //   role      = short description (e.g. "Head of HR, Nairobi")
+  //   name      = person's name
+  //   role      = short description (e.g. "Nairobi resident")
   //   initials  = 1-2 letters shown in the little avatar circle
-  // Add a new one by copying a whole { ... } block and adding a comma
-  // after the previous entry. Delete a block to remove a review.
   // ============================================================
   const TESTIMONIALS = [
     {
-      quote: "Our whole team came back from the Naivasha offsite actually talking to each other differently. Worth every shilling.",
-      name: "James K.",
-      role: "Head of HR, Nairobi",
-      initials: "JK"
-    },
-    {
-      quote: "First time in Kenya and it never once felt like a scramble. Our guide made the Mara trip feel personal.",
-      name: "Sofia M.",
-      role: "Visiting from Lisbon",
-      initials: "SM"
-    },
-    {
-      quote: "Booked a staycation on a Wednesday for that same weekend. Showed up Friday and everything was ready.",
-      name: "Amani W.",
+      quote: "Pleasure working and being served with team Tuwai. A great professional experience all through.",
+      name: "Ann",
       role: "Nairobi resident",
-      initials: "AW"
+      initials: "A"
+    },
+    {
+      quote: "Seamless experience! Fantastic. Awesome selections and guide. Loved the customer service experience.",
+      name: "Peter",
+      role: "Nairobi resident",
+      initials: "P"
+    },
+    {
+      quote: "Was an abrupt call and went perfectly well. Late request and a fantastic work effort. Had an adventure to recall at the Nairobi National Park.",
+      name: "Johnson Scott",
+      role: "Visiting from Europe",
+      initials: "JS"
+    },
+    {
+      quote: "From a referral to an experience to take me back. Thank you for your customer service and professionalism. Asante sana!",
+      name: "Hillary",
+      role: "Nairobi resident",
+      initials: "H"
     }
   ];
 
@@ -1824,6 +1828,29 @@
       if(changed && typeof window.refreshGalleryThumbs === 'function') window.refreshGalleryThumbs();
     }).catch(function(err){
       console.warn('Could not load saved package text, using built-in defaults.', err);
+    });
+
+    // Testimonials: if Jane has saved any via the dashboard, they fully
+    // replace the built-in defaults (sorted by slot order, empty ones skipped).
+    db.collection('testimonials').get().then(function(snapshot){
+      const saved = [];
+      snapshot.forEach(function(doc){
+        const m = /^t-(\d+)$/.exec(doc.id);
+        if(!m) return;
+        const data = doc.data();
+        if(data.name && data.quote){
+          saved.push({ order: parseInt(m[1], 10), name: data.name, role: data.role || '', quote: data.quote,
+            initials: (data.name || '').trim().split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase() });
+        }
+      });
+      if(saved.length > 0 && typeof TESTIMONIALS !== 'undefined'){
+        saved.sort((a,b) => a.order - b.order);
+        TESTIMONIALS.length = 0;
+        saved.forEach(t => TESTIMONIALS.push(t));
+        if(typeof renderTestimonials === 'function') renderTestimonials();
+      }
+    }).catch(function(err){
+      console.warn('Could not load saved testimonials, using built-in defaults.', err);
     });
   })();
 </script>
