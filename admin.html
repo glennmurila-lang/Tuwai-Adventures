@@ -98,6 +98,9 @@
   .package-group.open h3 .chev{transform:rotate(180deg);}
   .package-photos{display:none; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px;}
   .package-group.open .package-photos{display:grid;}
+  .pkg-text-card{grid-column:1 / -1; background:var(--cream-2);}
+  .pkg-text-card .field{margin-bottom:10px;}
+  .pkg-text-card .field input{font-size:0.88rem; padding:9px 12px;}
 
   .top-note{
     background:var(--cream-2); border:1px solid var(--line); border-radius:12px;
@@ -183,12 +186,26 @@
     { id: "logo", label: "Logo (nav, hero, footer)", accept: "image/*" }
   ];
 
-  // Same package names/order as the main site's Tours & Safaris gallery.
+  // Same package names/descriptions as the main site's Tours & Safaris gallery.
+  // (Used only as starting defaults — once Jane edits and saves a package's
+  // text here, the saved version in Firestore takes over.)
   const PACKAGES = [
-    "Maasai Mara Classic", "Amboseli Explorer", "Diani Coast Escape", "Tsavo Wilderness",
-    "Lake Nakuru Safari", "Nairobi National Park Day Trip", "Aberdare Highlands", "Mount Kenya Trek",
-    "Samburu Reserve", "Meru Wild Escape", "Hell's Gate Adventure", "Ol Pejeta Conservancy",
-    "Chyulu Hills Escape", "Watamu Marine Park", "Malindi Coastal Retreat", "Kakamega Rainforest"
+    { name: "Maasai Mara Classic", blurb: "3 days, 2 nights — big cats and the migration." },
+    { name: "Amboseli Explorer", blurb: "2 days, 1 night — elephants under Kilimanjaro." },
+    { name: "Diani Coast Escape", blurb: "4 days, 3 nights — white sand and slow mornings." },
+    { name: "Tsavo Wilderness", blurb: "3 days, 2 nights — Kenya's red-earth wild side." },
+    { name: "Lake Nakuru Safari", blurb: "2 days, 1 night — rhino sanctuary and flamingo shores." },
+    { name: "Nairobi National Park Day Trip", blurb: "Half day — wildlife with the city skyline behind it." },
+    { name: "Aberdare Highlands", blurb: "3 days, 2 nights — misty forests and tree-lodge nights." },
+    { name: "Mount Kenya Trek", blurb: "5 days, 4 nights — Africa's second-highest peak." },
+    { name: "Samburu Reserve", blurb: "3 days, 2 nights — rare wildlife north of the equator." },
+    { name: "Meru Wild Escape", blurb: "3 days, 2 nights — wild, remote, and rarely crowded." },
+    { name: "Hell's Gate Adventure", blurb: "Full day — cycling and gorge walks among wildlife." },
+    { name: "Ol Pejeta Conservancy", blurb: "2 days, 1 night — rhino sanctuary and big cats." },
+    { name: "Chyulu Hills Escape", blurb: "2 days, 1 night — rolling green hills and lava caves." },
+    { name: "Watamu Marine Park", blurb: "3 days, 2 nights — coral reefs and turtle watching." },
+    { name: "Malindi Coastal Retreat", blurb: "3 days, 2 nights — historic town, warm turquoise waters." },
+    { name: "Kakamega Rainforest", blurb: "2 days, 1 night — Kenya's only tropical rainforest." }
   ];
 
   let slotDataCache = {};
@@ -234,6 +251,26 @@
     renderMainSlots();
     renderPackageGroups();
     loadAllSlotData();
+    loadPackageTextData();
+  }
+
+  function loadPackageTextData(){
+    db.collection('packages').get().then(function(snapshot){
+      snapshot.forEach(function(doc){
+        const m = /^pkg-(\d+)$/.exec(doc.id);
+        if(!m) return;
+        const pIndex = parseInt(m[1], 10);
+        const data = doc.data();
+        const nameInput = document.getElementById('pkg-name-' + pIndex);
+        const blurbInput = document.getElementById('pkg-blurb-' + pIndex);
+        const titleEl = document.getElementById('pkg-title-' + pIndex);
+        if(nameInput && data.name){ nameInput.value = data.name; }
+        if(blurbInput && data.blurb){ blurbInput.value = data.blurb; }
+        if(titleEl && data.name){ titleEl.textContent = data.name; }
+      });
+    }).catch(function(err){
+      console.error('Failed to load saved package text:', err);
+    });
   }
 
   function slotThumbHTML(id){
@@ -258,10 +295,27 @@
 
   function renderPackageGroups(){
     const container = document.getElementById('packageGroups');
-    container.innerHTML = PACKAGES.map((name, pIndex) => `
+    container.innerHTML = PACKAGES.map((pkg, pIndex) => `
       <div class="package-group" id="pkg-${pIndex}">
-        <h3 onclick="togglePackage(${pIndex})">${name} <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></h3>
+        <h3 onclick="togglePackage(${pIndex})"><span id="pkg-title-${pIndex}">${pkg.name}</span> <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></h3>
         <div class="package-photos">
+          <div class="slot-card pkg-text-card">
+            <div class="slot-body">
+              <div class="slot-label">Package name &amp; description</div>
+              <div class="field">
+                <label for="pkg-name-${pIndex}">Name</label>
+                <input type="text" id="pkg-name-${pIndex}" value="${pkg.name.replace(/"/g,'&quot;')}">
+              </div>
+              <div class="field">
+                <label for="pkg-blurb-${pIndex}">Description</label>
+                <input type="text" id="pkg-blurb-${pIndex}" value="${pkg.blurb.replace(/"/g,'&quot;')}">
+              </div>
+              <div class="slot-upload-row">
+                <button class="slot-upload-btn" onclick="savePackageText(${pIndex})">Save details</button>
+              </div>
+              <div class="slot-status" id="status-pkg-text-${pIndex}"></div>
+            </div>
+          </div>
           ${[0,1,2].map(photoIndex => {
             const slotId = `tour-${pIndex}-${photoIndex}`;
             return `
@@ -279,6 +333,33 @@
           }).join('')}
         </div>
       </div>`).join('');
+  }
+
+  function savePackageText(pIndex){
+    const nameInput = document.getElementById('pkg-name-' + pIndex);
+    const blurbInput = document.getElementById('pkg-blurb-' + pIndex);
+    const statusEl = document.getElementById('status-pkg-text-' + pIndex);
+    const name = nameInput.value.trim();
+    const blurb = blurbInput.value.trim();
+    if(!name){
+      statusEl.textContent = 'Name can\'t be empty';
+      statusEl.className = 'slot-status err';
+      return;
+    }
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+    db.collection('packages').doc('pkg-' + pIndex).set({
+      name: name,
+      blurb: blurb,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function(){
+      statusEl.textContent = 'Saved \u2713';
+      statusEl.className = 'slot-status ok';
+      document.getElementById('pkg-title-' + pIndex).textContent = name;
+    }).catch(function(err){
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'slot-status err';
+    });
   }
 
   function togglePackage(index){
