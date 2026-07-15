@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuwai Adventures — Image Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bark:#241408; --terracotta:#c35b28; --terracotta-deep:#a94a1e;
+    --gold:#d9b86c; --cream:#f7f1e6; --cream-2:#efe6d3; --ink:#2b211a;
+    --sage:#56613f; --line:rgba(43,33,26,0.12); --ok:#3d9c5e; --err:#c0392b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Inter',sans-serif; background:var(--cream); color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif; font-weight:700; color:var(--bark);}
+  .wrap{max-width:980px; margin:0 auto; padding:32px 24px 80px;}
+
+  /* ---- Login screen ---- */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .login-card{
+    background:#fff; border:1px solid var(--line); border-radius:18px; padding:40px 36px;
+    max-width:380px; width:100%; box-shadow:0 20px 50px rgba(43,33,26,0.08);
+  }
+  .login-card h1{font-size:1.4rem; margin:0 0 6px;}
+  .login-card p{color:rgba(43,33,26,0.6); font-size:0.9rem; margin:0 0 24px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--sage); margin-bottom:6px;}
+  .field input{
+    width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px;
+    font-family:'Inter'; font-size:0.95rem; background:var(--cream);
+  }
+  .field input:focus{outline:2px solid var(--terracotta); outline-offset:1px;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--terracotta); color:#fff; border:none; padding:13px 22px;
+    border-radius:100px; font-weight:600; font-size:0.92rem; cursor:pointer;
+    transition:background .2s, transform .2s; width:100%;
+  }
+  .btn:hover{background:var(--terracotta-deep); transform:translateY(-1px);}
+  .btn:disabled{opacity:0.6; cursor:not-allowed; transform:none;}
+  #loginError{color:var(--err); font-size:0.85rem; margin-top:12px; display:none;}
+
+  /* ---- Dashboard ---- */
+  #dashboard{display:none;}
+  header.topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 24px; border-bottom:1px solid var(--line); background:#fff;
+    position:sticky; top:0; z-index:5;
+  }
+  header.topbar h1{font-size:1.1rem; margin:0;}
+  .logout-btn{
+    background:none; border:1px solid var(--line); color:var(--ink); padding:9px 16px;
+    border-radius:100px; font-size:0.85rem; cursor:pointer; font-family:'Inter';
+  }
+  .logout-btn:hover{border-color:var(--terracotta); color:var(--terracotta);}
+
+  .section-title{margin:36px 0 6px; font-size:1.2rem;}
+  .section-sub{color:rgba(43,33,26,0.55); font-size:0.88rem; margin-bottom:20px;}
+
+  .slot-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:16px;}
+  .slot-card{
+    background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  }
+  .slot-thumb{
+    height:120px; background:var(--cream-2); display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+  }
+  .slot-thumb img, .slot-thumb video{width:100%; height:100%; object-fit:cover;}
+  .slot-thumb .placeholder{font-size:0.75rem; color:rgba(43,33,26,0.4); font-family:'IBM Plex Mono';}
+  .slot-body{padding:12px 14px 14px;}
+  .slot-label{font-size:0.88rem; font-weight:600; margin-bottom:8px; color:var(--bark);}
+  .slot-upload-row{display:flex; gap:6px; align-items:center;}
+  .slot-upload-row input[type=file]{
+    font-size:0.72rem; max-width:120px;
+  }
+  .slot-upload-btn{
+    background:var(--sage); color:#fff; border:none; padding:6px 12px; border-radius:100px;
+    font-size:0.75rem; cursor:pointer; white-space:nowrap; font-family:'Inter'; font-weight:600;
+  }
+  .slot-upload-btn:hover{background:#454f32;}
+  .slot-upload-btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .slot-status{font-size:0.72rem; margin-top:6px; min-height:14px;}
+  .slot-status.ok{color:var(--ok);}
+  .slot-status.err{color:var(--err);}
+  .slot-status.working{color:var(--sage);}
+
+  .package-group{
+    background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-bottom:14px;
+  }
+  .package-group h3{font-size:0.98rem; margin:0 0 12px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;}
+  .package-group h3 .chev{transition:transform .2s; color:var(--terracotta);}
+  .package-group.open h3 .chev{transform:rotate(180deg);}
+  .package-photos{display:none; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px;}
+  .package-group.open .package-photos{display:grid;}
+
+  .top-note{
+    background:var(--cream-2); border:1px solid var(--line); border-radius:12px;
+    padding:14px 18px; font-size:0.85rem; color:rgba(43,33,26,0.7); margin-bottom:8px;
+  }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <h1>Tuwai Adventures</h1>
+    <p>Sign in to update site images</p>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn" id="loginBtn">Log in</button>
+      <div id="loginError"></div>
+    </form>
+  </div>
+</div>
+
+<div id="dashboard">
+  <header class="topbar">
+    <h1>Tuwai Adventures — Image Dashboard</h1>
+    <button class="logout-btn" id="logoutBtn">Log out</button>
+  </header>
+
+  <div class="wrap">
+    <div class="top-note">
+      Upload a new photo (or video, for the hero) in any box below. It replaces what's live on the site within a few seconds — no need to touch any code. Images should ideally be under 5MB.
+    </div>
+
+    <h2 class="section-title">Main site images</h2>
+    <p class="section-sub">The key visuals used across the homepage.</p>
+    <div class="slot-grid" id="mainSlotGrid"><!-- filled by script --></div>
+
+    <h2 class="section-title">Tours &amp; Safaris gallery photos</h2>
+    <p class="section-sub">Click a package to open it and upload its 3 photos.</p>
+    <div id="packageGroups"><!-- filled by script --></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script>
+  // ============================================================
+  // FIREBASE CONFIG — from your Firebase project settings.
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyCRTqa0BvEBtVVEg7_y30ukcLNi5KIGEFU",
+    authDomain: "tuwai-adventures.firebaseapp.com",
+    projectId: "tuwai-adventures",
+    storageBucket: "tuwai-adventures.firebasestorage.app",
+    messagingSenderId: "527546498324",
+    appId: "1:527546498324:web:a5ebce034df326dd275601"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const storage = firebase.storage();
+
+  // ============================================================
+  // SLOT DEFINITIONS — main site image/video slots.
+  // 'type' controls whether the upload box accepts images only,
+  // or both images and video (hero only).
+  // ============================================================
+  const MAIN_SLOTS = [
+    { id: "hero", label: "Hero background (photo or video)", accept: "image/*,video/*" },
+    { id: "tours-card", label: "Tours & Safaris card background", accept: "image/*" },
+    { id: "nontour-card", label: "Non-Tour Adventures card background", accept: "image/*" },
+    { id: "destinations-bg", label: "\u201cMost visited\u201d strip backdrop", accept: "image/*" },
+    { id: "whatsapp-bg", label: "WhatsApp booking section background", accept: "image/*" },
+    { id: "contact-bg", label: "Contact section background", accept: "image/*" },
+    { id: "logo", label: "Logo (nav, hero, footer)", accept: "image/*" }
+  ];
+
+  // Same package names/order as the main site's Tours & Safaris gallery.
+  const PACKAGES = [
+    "Maasai Mara Classic", "Amboseli Explorer", "Diani Coast Escape", "Tsavo Wilderness",
+    "Lake Nakuru Safari", "Nairobi National Park Day Trip", "Aberdare Highlands", "Mount Kenya Trek",
+    "Samburu Reserve", "Meru Wild Escape", "Hell's Gate Adventure", "Ol Pejeta Conservancy",
+    "Chyulu Hills Escape", "Watamu Marine Park", "Malindi Coastal Retreat", "Kakamega Rainforest"
+  ];
+
+  let slotDataCache = {};
+
+  // ---------- Auth ----------
+  auth.onAuthStateChanged(function(user){
+    if(user){
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      initDashboard();
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('dashboard').style.display = 'none';
+    }
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const btn = document.getElementById('loginBtn');
+    const errEl = document.getElementById('loginError');
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+    auth.signInWithEmailAndPassword(email, password)
+      .catch(function(err){
+        errEl.textContent = 'Could not sign in: ' + err.message;
+        errEl.style.display = 'block';
+      })
+      .finally(function(){
+        btn.disabled = false;
+        btn.textContent = 'Log in';
+      });
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', function(){
+    auth.signOut();
+  });
+
+  // ---------- Dashboard rendering ----------
+  function initDashboard(){
+    renderMainSlots();
+    renderPackageGroups();
+    loadAllSlotData();
+  }
+
+  function slotThumbHTML(id){
+    return `<div class="slot-thumb" id="thumb-${id}"><span class="placeholder">No image yet</span></div>`;
+  }
+
+  function renderMainSlots(){
+    const grid = document.getElementById('mainSlotGrid');
+    grid.innerHTML = MAIN_SLOTS.map(slot => `
+      <div class="slot-card">
+        ${slotThumbHTML(slot.id)}
+        <div class="slot-body">
+          <div class="slot-label">${slot.label}</div>
+          <div class="slot-upload-row">
+            <input type="file" id="file-${slot.id}" accept="${slot.accept}">
+            <button class="slot-upload-btn" onclick="uploadSlot('${slot.id}')">Upload</button>
+          </div>
+          <div class="slot-status" id="status-${slot.id}"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderPackageGroups(){
+    const container = document.getElementById('packageGroups');
+    container.innerHTML = PACKAGES.map((name, pIndex) => `
+      <div class="package-group" id="pkg-${pIndex}">
+        <h3 onclick="togglePackage(${pIndex})">${name} <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></h3>
+        <div class="package-photos">
+          ${[0,1,2].map(photoIndex => {
+            const slotId = `tour-${pIndex}-${photoIndex}`;
+            return `
+            <div class="slot-card">
+              ${slotThumbHTML(slotId)}
+              <div class="slot-body">
+                <div class="slot-label">Photo ${photoIndex + 1}</div>
+                <div class="slot-upload-row">
+                  <input type="file" id="file-${slotId}" accept="image/*">
+                  <button class="slot-upload-btn" onclick="uploadSlot('${slotId}')">Upload</button>
+                </div>
+                <div class="slot-status" id="status-${slotId}"></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`).join('');
+  }
+
+  function togglePackage(index){
+    document.getElementById('pkg-' + index).classList.toggle('open');
+  }
+
+  // ---------- Load existing images from Firestore ----------
+  function loadAllSlotData(){
+    db.collection('images').get().then(function(snapshot){
+      snapshot.forEach(function(doc){
+        slotDataCache[doc.id] = doc.data();
+        updateThumb(doc.id, doc.data());
+      });
+    }).catch(function(err){
+      console.error('Failed to load existing images:', err);
+    });
+  }
+
+  function updateThumb(slotId, data){
+    const thumb = document.getElementById('thumb-' + slotId);
+    if(!thumb || !data || !data.url) return;
+    if(data.type === 'video'){
+      thumb.innerHTML = `<video src="${data.url}" muted loop autoplay playsinline></video>`;
+    } else {
+      thumb.innerHTML = `<img src="${data.url}" alt="">`;
+    }
+  }
+
+  // ---------- Upload ----------
+  function uploadSlot(slotId){
+    const fileInput = document.getElementById('file-' + slotId);
+    const statusEl = document.getElementById('status-' + slotId);
+    const btn = fileInput.nextElementSibling;
+    const file = fileInput.files[0];
+    if(!file){
+      statusEl.textContent = 'Choose a file first';
+      statusEl.className = 'slot-status err';
+      return;
+    }
+    const isVideo = file.type.indexOf('video/') === 0;
+    const ext = file.name.split('.').pop();
+    const path = 'images/' + slotId + '.' + ext;
+
+    btn.disabled = true;
+    statusEl.textContent = 'Uploading...';
+    statusEl.className = 'slot-status working';
+
+    const ref = storage.ref().child(path);
+    ref.put(file).then(function(){
+      return ref.getDownloadURL();
+    }).then(function(url){
+      return db.collection('images').doc(slotId).set({
+        url: url,
+        type: isVideo ? 'video' : 'image',
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }).then(function(){
+      statusEl.textContent = 'Updated \u2713';
+      statusEl.className = 'slot-status ok';
+      updateThumb(slotId, { url: URL.createObjectURL(file), type: isVideo ? 'video' : 'image' });
+      btn.disabled = false;
+    }).catch(function(err){
+      console.error(err);
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'slot-status err';
+      btn.disabled = false;
+    });
+  }
+</script>
+</body>
+</html>
