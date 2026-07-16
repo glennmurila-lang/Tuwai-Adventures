@@ -149,6 +149,25 @@
       <span class="visit-counter-label">total site visits (all time)</span>
     </div>
 
+    <h2 class="section-title">Homepage stats</h2>
+    <p class="section-sub">The "100+ customers served" and "70+ local adventures completed" numbers near the top of the site. Update these as the real numbers grow.</p>
+    <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
+      <div class="slot-body">
+        <div class="field">
+          <label for="statCustomersInput">Customers served</label>
+          <input type="number" id="statCustomersInput" min="0" placeholder="e.g. 100">
+        </div>
+        <div class="field">
+          <label for="statAdventuresInput">Local adventures completed</label>
+          <input type="number" id="statAdventuresInput" min="0" placeholder="e.g. 70">
+        </div>
+        <div class="slot-upload-row">
+          <button class="slot-upload-btn" onclick="saveTrustStats()">Save numbers</button>
+        </div>
+        <div class="slot-status" id="status-trust-stats"></div>
+      </div>
+    </div>
+
     <div class="top-note">
       Upload a new photo (or video, for the hero) in any box below. It replaces what's live on the site within a few seconds — no need to touch any code. Images should ideally be under 5MB.
     </div>
@@ -272,6 +291,7 @@
     loadPackageTextData();
     loadTestimonialData();
     loadVisitCount();
+    loadTrustStats();
   }
 
   function loadVisitCount(){
@@ -285,6 +305,41 @@
     }).catch(function(err){
       document.getElementById('visitCounterNumber').textContent = '—';
       console.error('Could not load visit count:', err);
+    });
+  }
+
+  function loadTrustStats(){
+    db.collection('stats').doc('trust').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.customers !== undefined) document.getElementById('statCustomersInput').value = data.customers;
+      if(data.adventures !== undefined) document.getElementById('statAdventuresInput').value = data.adventures;
+    }).catch(function(err){
+      console.error('Could not load trust stats:', err);
+    });
+  }
+
+  function saveTrustStats(){
+    const customers = parseInt(document.getElementById('statCustomersInput').value, 10);
+    const adventures = parseInt(document.getElementById('statAdventuresInput').value, 10);
+    const statusEl = document.getElementById('status-trust-stats');
+    if(isNaN(customers) || isNaN(adventures)){
+      statusEl.textContent = 'Enter a number in both boxes';
+      statusEl.className = 'slot-status err';
+      return;
+    }
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+    db.collection('stats').doc('trust').set({
+      customers: customers,
+      adventures: adventures,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).then(function(){
+      statusEl.textContent = 'Saved \u2713';
+      statusEl.className = 'slot-status ok';
+    }).catch(function(err){
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'slot-status err';
     });
   }
 
