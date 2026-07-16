@@ -126,6 +126,21 @@
   .lead-meta{font-size:0.82rem; color:rgba(43,33,26,0.6); margin-bottom:6px;}
   .lead-message{font-size:0.9rem; color:rgba(43,33,26,0.75);}
   .lead-empty{color:rgba(43,33,26,0.5); font-size:0.9rem; padding:20px 0;}
+  .rating-mod-row{display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap;}
+  .rating-badge{
+    font-family:'IBM Plex Mono'; font-size:0.7rem; padding:4px 10px; border-radius:100px;
+  }
+  .rating-badge-pending{background:rgba(217,184,108,0.25); color:#8a6a2f;}
+  .rating-badge-approved{background:rgba(61,156,94,0.15); color:var(--ok);}
+  .rating-badge-rejected{background:rgba(192,57,43,0.12); color:var(--err);}
+  .rating-action-btn{
+    background:none; border:1px solid var(--line); color:var(--ink); padding:5px 12px;
+    border-radius:100px; font-size:0.76rem; cursor:pointer; font-family:'Inter'; font-weight:600;
+  }
+  .rating-approve-btn{border-color:var(--ok); color:var(--ok);}
+  .rating-approve-btn:hover{background:var(--ok); color:#fff;}
+  .rating-reject-btn{border-color:var(--err); color:var(--err);}
+  .rating-reject-btn:hover{background:var(--err); color:#fff;}
   .referral-breakdown{
     background:#fff; border:1px solid var(--line); border-radius:14px;
     padding:18px 20px; margin-bottom:20px;
@@ -183,7 +198,7 @@
     <div id="leadsList"><!-- filled by script --></div>
 
     <h2 class="section-title">Ratings</h2>
-    <p class="section-sub">Star ratings and comments visitors have left on the site.</p>
+    <p class="section-sub">New ratings wait here for your review — they don't count toward the public average until you approve them. Comments are never shown publicly on the site either way, only here.</p>
     <div class="visit-counter-card" id="ratingSummaryCard" style="margin-bottom:16px;">
       <span class="visit-counter-number" id="ratingAvgNumber">—</span>
       <span class="visit-counter-label" id="ratingAvgLabel">average rating</span>
@@ -800,15 +815,27 @@
     });
 
     const listEl = document.getElementById('ratingsList');
-    db.collection('ratings').orderBy('createdAt', 'desc').limit(50).get().then(function(snapshot){
+    db.collection('ratings').orderBy('createdAt', 'desc').limit(100).get().then(function(snapshot){
       if(snapshot.empty){
         listEl.innerHTML = '<div class="lead-empty">No ratings yet — they\'ll show up here as visitors rate their experience.</div>';
         return;
       }
       listEl.innerHTML = snapshot.docs.map(function(doc){
         const d = doc.data();
+        const id = doc.id;
         const when = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString() : 'Just now';
         const stars = '★'.repeat(d.stars || 0) + '☆'.repeat(5 - (d.stars || 0));
+        const status = d.status || 'pending';
+        const badgeClass = status === 'approved' ? 'rating-badge-approved' : (status === 'rejected' ? 'rating-badge-rejected' : 'rating-badge-pending');
+        const badgeText = status === 'approved' ? 'Showing in average' : (status === 'rejected' ? 'Hidden' : 'Awaiting review');
+        let actions = '';
+        if(status === 'pending'){
+          actions = `
+            <button class="rating-action-btn rating-approve-btn" onclick="approveRating('${id}', ${d.stars || 0})">Approve</button>
+            <button class="rating-action-btn rating-reject-btn" onclick="rejectRating('${id}')">Reject</button>`;
+        } else {
+          actions = `<button class="rating-action-btn" onclick="undoRatingStatus('${id}', ${d.stars || 0}, '${status}')">Undo</button>`;
+        }
         return `
           <div class="lead-card">
             <div class="lead-top">
@@ -816,12 +843,66 @@
               <span class="lead-time">${when}</span>
             </div>
             ${d.comment ? `<div class="lead-message">${d.comment.replace(/</g,'&lt;')}</div>` : ''}
+            <div class="rating-mod-row">
+              <span class="rating-badge ${badgeClass}">${badgeText}</span>
+              ${actions}
+            </div>
           </div>`;
       }).join('');
     }).catch(function(err){
       listEl.innerHTML = '<div class="lead-empty">Could not load ratings: ' + err.message + '</div>';
       console.error('Could not load ratings:', err);
     });
+  }
+
+  function approveRating(id, stars){
+    db.collection('ratings').doc(id).update({ status: 'approved' })
+      .then(function(){
+        return db.collection('stats').doc('ratings').set({
+          sum: firebase.firestore.FieldValue.increment(stars),
+          count: firebase.firestore.FieldValue.increment(1)
+        }, { merge: true });
+      })
+      .then(function(){
+        loadRatings();
+      })
+      .catch(function(err){
+        alert('Could not approve rating: ' + err.message);
+        console.error(err);
+      });
+  }
+
+  function rejectRating(id){
+    db.collection('ratings').doc(id).update({ status: 'rejected' })
+      .then(function(){
+        loadRatings();
+      })
+      .catch(function(err){
+        alert('Could not reject rating: ' + err.message);
+        console.error(err);
+      });
+  }
+
+  function undoRatingStatus(id, stars, previousStatus){
+    const updates = db.collection('ratings').doc(id).update({ status: 'pending' });
+    if(previousStatus === 'approved'){
+      updates.then(function(){
+        return db.collection('stats').doc('ratings').set({
+          sum: firebase.firestore.FieldValue.increment(-stars),
+          count: firebase.firestore.FieldValue.increment(-1)
+        }, { merge: true });
+      }).then(function(){
+        loadRatings();
+      }).catch(function(err){
+        alert('Could not undo rating: ' + err.message);
+        console.error(err);
+      });
+    } else {
+      updates.then(function(){ loadRatings(); }).catch(function(err){
+        alert('Could not undo rating: ' + err.message);
+        console.error(err);
+      });
+    }
   }
 
   function loadTrustStats(){
