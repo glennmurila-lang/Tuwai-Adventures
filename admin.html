@@ -171,6 +171,14 @@
     <p class="section-sub">Everyone who's submitted the contact form on the site, most recent first.</p>
     <div id="leadsList"><!-- filled by script --></div>
 
+    <h2 class="section-title">Ratings</h2>
+    <p class="section-sub">Star ratings and comments visitors have left on the site.</p>
+    <div class="visit-counter-card" id="ratingSummaryCard" style="margin-bottom:16px;">
+      <span class="visit-counter-number" id="ratingAvgNumber">—</span>
+      <span class="visit-counter-label" id="ratingAvgLabel">average rating</span>
+    </div>
+    <div id="ratingsList"><!-- filled by script --></div>
+
     <h2 class="section-title">Hero text</h2>
     <p class="section-sub">The three lines of copy in the hero section, under the "Adventure calling" widget.</p>
     <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
@@ -305,6 +313,10 @@
     <h2 class="section-title">Tours &amp; Safaris gallery photos</h2>
     <p class="section-sub">Click a package to open it and upload its 3 photos. Tip: "Photo 1" for Maasai Mara Classic, Amboseli Explorer, Diani Coast Escape, and Tsavo Wilderness also shows automatically in the homepage's "Most visited" scrolling strip — no need to upload it twice.</p>
     <div id="packageGroups"><!-- filled by script --></div>
+
+    <h2 class="section-title">Non-Tour Adventures gallery photos</h2>
+    <p class="section-sub">Click a category to open it and upload its 8 photos — Short Staycation, Hotel Bookings, and Team Building Packages.</p>
+    <div id="nonTourGroups"><!-- filled by script --></div>
   </div>
 </div>
 
@@ -409,12 +421,14 @@
     renderMainSlots();
     renderTestimonialSlots();
     renderPackageGroups();
+    renderNonTourGroups();
     loadAllSlotData();
     loadPackageTextData();
     loadTestimonialData();
     loadVisitCount();
     loadWaClicks();
     loadLeads();
+    loadRatings();
     loadTrustStats();
     loadHeroText();
     loadAboutText();
@@ -652,6 +666,48 @@
     });
   }
 
+  function loadRatings(){
+    db.collection('stats').doc('ratings').get().then(function(doc){
+      const numEl = document.getElementById('ratingAvgNumber');
+      const labelEl = document.getElementById('ratingAvgLabel');
+      if(doc.exists && doc.data().count){
+        const d = doc.data();
+        const avg = (d.sum / d.count).toFixed(1);
+        numEl.textContent = avg + ' \u2605';
+        labelEl.textContent = 'average from ' + d.count + (d.count === 1 ? ' rating' : ' ratings');
+      } else {
+        numEl.textContent = '—';
+        labelEl.textContent = 'no ratings yet';
+      }
+    }).catch(function(err){
+      console.error('Could not load rating average:', err);
+    });
+
+    const listEl = document.getElementById('ratingsList');
+    db.collection('ratings').orderBy('createdAt', 'desc').limit(50).get().then(function(snapshot){
+      if(snapshot.empty){
+        listEl.innerHTML = '<div class="lead-empty">No ratings yet — they\'ll show up here as visitors rate their experience.</div>';
+        return;
+      }
+      listEl.innerHTML = snapshot.docs.map(function(doc){
+        const d = doc.data();
+        const when = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString() : 'Just now';
+        const stars = '★'.repeat(d.stars || 0) + '☆'.repeat(5 - (d.stars || 0));
+        return `
+          <div class="lead-card">
+            <div class="lead-top">
+              <span class="lead-name">${stars} &middot; ${(d.name || 'Anonymous').replace(/</g,'&lt;')}</span>
+              <span class="lead-time">${when}</span>
+            </div>
+            ${d.comment ? `<div class="lead-message">${d.comment.replace(/</g,'&lt;')}</div>` : ''}
+          </div>`;
+      }).join('');
+    }).catch(function(err){
+      listEl.innerHTML = '<div class="lead-empty">Could not load ratings: ' + err.message + '</div>';
+      console.error('Could not load ratings:', err);
+    });
+  }
+
   function loadTrustStats(){
     db.collection('stats').doc('trust').get().then(function(doc){
       if(!doc.exists) return;
@@ -878,6 +934,39 @@
 
   function togglePackage(index){
     document.getElementById('pkg-' + index).classList.toggle('open');
+  }
+
+  // Same 3 categories/order as the main site's Non-Tour Adventures gallery,
+  // each with 8 photo slots.
+  const NON_TOUR_CATEGORIES = ["Short Staycation", "Hotel Bookings", "Team Building Packages"];
+
+  function renderNonTourGroups(){
+    const container = document.getElementById('nonTourGroups');
+    container.innerHTML = NON_TOUR_CATEGORIES.map((name, cIndex) => `
+      <div class="package-group" id="nontour-group-${cIndex}">
+        <h3 onclick="toggleNonTourGroup(${cIndex})">${name} <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></h3>
+        <div class="package-photos">
+          ${[0,1,2,3,4,5,6,7].map(photoIndex => {
+            const slotId = `nontour-${cIndex}-${photoIndex}`;
+            return `
+            <div class="slot-card">
+              ${slotThumbHTML(slotId)}
+              <div class="slot-body">
+                <div class="slot-label">Photo ${photoIndex + 1}</div>
+                <div class="slot-upload-row">
+                  <input type="file" id="file-${slotId}" accept="image/*">
+                  <button class="slot-upload-btn" onclick="uploadSlot('${slotId}')">Upload</button>
+                </div>
+                <div class="slot-status" id="status-${slotId}"></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`).join('');
+  }
+
+  function toggleNonTourGroup(index){
+    document.getElementById('nontour-group-' + index).classList.toggle('open');
   }
 
   // ---------- Load existing images from Firestore ----------
