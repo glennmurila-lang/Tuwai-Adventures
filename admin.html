@@ -725,7 +725,7 @@
               <span class="lead-name">${(d.name || 'No name given').replace(/</g,'&lt;')}</span>
               <span class="lead-time">${when}</span>
             </div>
-            <div class="lead-meta">${(d.email || 'No email').replace(/</g,'&lt;')} &middot; ${(d.type || '').replace(/</g,'&lt;')}</div>
+            <div class="lead-meta">${(d.email || 'No email').replace(/</g,'&lt;')} &middot; ${(d.type || '').replace(/</g,'&lt;')}${d.referralSource ? ' &middot; via ' + d.referralSource.replace(/</g,'&lt;') : ''}</div>
             ${d.message ? `<div class="lead-message">${d.message.replace(/</g,'&lt;')}</div>` : ''}
           </div>`;
       }).join('');
