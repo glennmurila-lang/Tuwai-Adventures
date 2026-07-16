@@ -1184,6 +1184,17 @@
         </div>
         <div class="form-row">
           <div class="field full">
+            <label for="referral">How did you hear about us?</label>
+            <select id="referral">
+              <option>Website visit</option>
+              <option>Referral</option>
+              <option>Instagram</option>
+              <option>TikTok</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field full">
             <label for="msg">A few details</label>
             <textarea id="msg" rows="4" placeholder="Dates, group size, budget — whatever you know so far"></textarea>
           </div>
@@ -1884,6 +1895,7 @@
     const nameVal = document.getElementById('name').value.trim();
     const emailVal = document.getElementById('email').value.trim();
     const typeVal = document.getElementById('type').value;
+    const referralVal = document.getElementById('referral').value;
     const msgVal = document.getElementById('msg').value.trim();
 
     function showSent(){
@@ -1900,6 +1912,7 @@
         name: nameVal,
         email: emailVal,
         type: typeVal,
+        referralSource: referralVal,
         message: msgVal,
         source: 'contact_form',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
