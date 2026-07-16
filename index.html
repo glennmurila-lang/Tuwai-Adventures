@@ -1807,6 +1807,14 @@
       }
     }
 
+    // Simple visit counter for the dashboard — best-effort, never blocks
+    // or breaks the page if it fails (e.g. offline visitor).
+    db.collection('stats').doc('visits').set({
+      count: firebase.firestore.FieldValue.increment(1)
+    }, { merge: true }).catch(function(err){
+      console.warn('Visit counter update failed (non-critical).', err);
+    });
+
     db.collection('images').get().then(function(snapshot){
       snapshot.forEach(function(doc){
         applySlot(doc.id, doc.data());
