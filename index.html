@@ -814,9 +814,9 @@
             </a>
           </div>
         </div>
-        <p class="lede">Your sofa has heard one too many of your stories. What tale will you tell next? Isn't the world too beautiful to see only through a screen?</p>
-        <p class="lede">Worried about budget, or think adventure is too far away? Tired of gloomy sunsets by your window? Guess what — an experience seems so far yet so close. A Hakuna Matata experience awaits, closer than you think.</p>
-        <p class="lede">Weekend escape, staycation, safari, or coastal getaway — whatever's calling your name, let's write the next story of an experience together.</p>
+        <p class="lede" id="heroPara1">Your sofa has heard one too many of your stories. What tale will you tell next? Isn't the world too beautiful to see only through a screen?</p>
+        <p class="lede" id="heroPara2">Worried about budget, or think adventure is too far away? Tired of gloomy sunsets by your window? Guess what — an experience seems so far yet so close. A Hakuna Matata experience awaits, closer than you think.</p>
+        <p class="lede" id="heroPara3">Weekend escape, staycation, safari, or coastal getaway — whatever's calling your name, let's write the next story of an experience together.</p>
         <a href="#services" class="hero-explore-link">See what we do &#8595;</a>
       </div>
       <div>
@@ -1876,6 +1876,18 @@
       }
     }).catch(function(err){
       console.warn('Could not load saved trust stats, using built-in defaults.', err);
+    });
+
+    // Hero paragraph text — editable from the dashboard.
+    db.collection('content').doc('hero').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      ['para1','para2','para3'].forEach(function(key, i){
+        const el = document.getElementById('heroPara' + (i + 1));
+        if(el && data[key]) el.textContent = data[key];
+      });
+    }).catch(function(err){
+      console.warn('Could not load saved hero text, using built-in defaults.', err);
     });
 
     db.collection('images').get().then(function(snapshot){
