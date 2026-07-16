@@ -202,6 +202,29 @@
       </div>
     </div>
 
+    <h2 class="section-title">Engagement popups</h2>
+    <p class="section-sub">A friendly nudge that shows once per visit — whichever of these three happens first: someone's about to close the tab, someone comes back after clicking "Book on WhatsApp," or someone's been browsing a while. Each has a WhatsApp button attached.</p>
+    <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
+      <div class="slot-body">
+        <div class="field">
+          <label for="popupExitInput">When someone's about to leave the site</label>
+          <textarea id="popupExitInput" rows="2"></textarea>
+        </div>
+        <div class="field">
+          <label for="popupWaReturnInput">When someone returns after clicking "Book on WhatsApp"</label>
+          <textarea id="popupWaReturnInput" rows="2"></textarea>
+        </div>
+        <div class="field">
+          <label for="popupTimeInput">When someone's been browsing a while</label>
+          <textarea id="popupTimeInput" rows="2"></textarea>
+        </div>
+        <div class="slot-upload-row">
+          <button class="slot-upload-btn" onclick="savePopupMessages()">Save popup wording</button>
+        </div>
+        <div class="slot-status" id="status-popups"></div>
+      </div>
+    </div>
+
     <h2 class="section-title">Contact info</h2>
     <p class="section-sub">Updates the phone number and email shown on the site, plus every WhatsApp/call button — all in one place.</p>
     <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
@@ -434,6 +457,7 @@
     loadAboutText();
     loadContactInfo();
     loadSocialLinks();
+    loadPopupMessages();
   }
 
   const DEFAULT_CONTACT_INFO = {
@@ -467,6 +491,51 @@
     statusEl.className = 'slot-status working';
     db.collection('content').doc('contact').set({
       phone: phone, email: email,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).then(function(){
+      statusEl.textContent = 'Saved \u2713';
+      statusEl.className = 'slot-status ok';
+    }).catch(function(err){
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'slot-status err';
+    });
+  }
+
+  const DEFAULT_POPUP_MESSAGES = {
+    exitIntent: "Before you go — need help planning your next adventure?",
+    whatsappReturn: "Still deciding? We're just a message away — happy to help you plan.",
+    timeOnPage: "Need a hand deciding? We're here to help you plan the perfect trip."
+  };
+
+  function loadPopupMessages(){
+    document.getElementById('popupExitInput').value = DEFAULT_POPUP_MESSAGES.exitIntent;
+    document.getElementById('popupWaReturnInput').value = DEFAULT_POPUP_MESSAGES.whatsappReturn;
+    document.getElementById('popupTimeInput').value = DEFAULT_POPUP_MESSAGES.timeOnPage;
+    db.collection('content').doc('popups').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.exitIntent) document.getElementById('popupExitInput').value = data.exitIntent;
+      if(data.whatsappReturn) document.getElementById('popupWaReturnInput').value = data.whatsappReturn;
+      if(data.timeOnPage) document.getElementById('popupTimeInput').value = data.timeOnPage;
+    }).catch(function(err){
+      console.error('Could not load popup messages:', err);
+    });
+  }
+
+  function savePopupMessages(){
+    const exitIntent = document.getElementById('popupExitInput').value.trim();
+    const whatsappReturn = document.getElementById('popupWaReturnInput').value.trim();
+    const timeOnPage = document.getElementById('popupTimeInput').value.trim();
+    const statusEl = document.getElementById('status-popups');
+    if(!exitIntent || !whatsappReturn || !timeOnPage){
+      statusEl.textContent = 'All three boxes need text';
+      statusEl.className = 'slot-status err';
+      return;
+    }
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+    db.collection('content').doc('popups').set({
+      exitIntent: exitIntent, whatsappReturn: whatsappReturn, timeOnPage: timeOnPage,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).then(function(){
       statusEl.textContent = 'Saved \u2713';
