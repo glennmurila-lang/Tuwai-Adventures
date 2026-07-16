@@ -126,6 +126,16 @@
   .lead-meta{font-size:0.82rem; color:rgba(43,33,26,0.6); margin-bottom:6px;}
   .lead-message{font-size:0.9rem; color:rgba(43,33,26,0.75);}
   .lead-empty{color:rgba(43,33,26,0.5); font-size:0.9rem; padding:20px 0;}
+  .referral-breakdown{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:18px 20px; margin-bottom:20px;
+  }
+  .referral-row{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
+  .referral-row:last-child{margin-bottom:0;}
+  .referral-label{width:110px; flex-shrink:0; font-size:0.85rem; color:var(--bark); font-weight:600;}
+  .referral-bar-track{flex:1; background:var(--cream-2); border-radius:100px; height:10px; overflow:hidden;}
+  .referral-bar-fill{background:var(--terracotta); height:100%; border-radius:100px; transition:width .4s ease;}
+  .referral-count{width:70px; flex-shrink:0; text-align:right; font-size:0.82rem; color:rgba(43,33,26,0.6); font-family:'IBM Plex Mono';}
 </style>
 </head>
 <body>
@@ -169,6 +179,7 @@
 
     <h2 class="section-title">Enquiries</h2>
     <p class="section-sub">Everyone who's submitted the contact form on the site, most recent first.</p>
+    <div id="referralBreakdown" class="referral-breakdown"><!-- filled by script --></div>
     <div id="leadsList"><!-- filled by script --></div>
 
     <h2 class="section-title">Ratings</h2>
@@ -710,6 +721,7 @@
   }
 
   function loadLeads(){
+    loadReferralBreakdown();
     const listEl = document.getElementById('leadsList');
     db.collection('leads').orderBy('createdAt', 'desc').limit(50).get().then(function(snapshot){
       if(snapshot.empty){
@@ -732,6 +744,41 @@
     }).catch(function(err){
       listEl.innerHTML = '<div class="lead-empty">Could not load enquiries: ' + err.message + '</div>';
       console.error('Could not load leads:', err);
+    });
+  }
+
+  function loadReferralBreakdown(){
+    const el = document.getElementById('referralBreakdown');
+    const CHANNELS = ['Website visit', 'Referral', 'Instagram', 'TikTok'];
+    db.collection('leads').get().then(function(snapshot){
+      if(snapshot.empty){
+        el.innerHTML = '<div class="lead-empty">No enquiries yet to break down.</div>';
+        return;
+      }
+      const counts = {};
+      CHANNELS.forEach(function(c){ counts[c] = 0; });
+      let total = 0;
+      snapshot.forEach(function(doc){
+        const src = doc.data().referralSource;
+        if(src && counts[src] !== undefined){
+          counts[src]++;
+        }
+        total++;
+      });
+      const maxCount = Math.max.apply(null, CHANNELS.map(function(c){ return counts[c]; })) || 1;
+      el.innerHTML = '<div class="slot-label" style="margin-bottom:14px;">How people hear about us (' + total + ' total enquiries)</div>' +
+        CHANNELS.map(function(c){
+          const pct = Math.round((counts[c] / maxCount) * 100);
+          return `
+            <div class="referral-row">
+              <span class="referral-label">${c}</span>
+              <div class="referral-bar-track"><div class="referral-bar-fill" style="width:${pct}%"></div></div>
+              <span class="referral-count">${counts[c]}</span>
+            </div>`;
+        }).join('');
+    }).catch(function(err){
+      el.innerHTML = '<div class="lead-empty">Could not load breakdown: ' + err.message + '</div>';
+      console.error('Could not load referral breakdown:', err);
     });
   }
 
