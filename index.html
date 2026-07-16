@@ -1706,6 +1706,7 @@
      ============================================================ -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
 <script>
   (function(){
     const firebaseConfig = {
@@ -1714,10 +1715,12 @@
       projectId: "tuwai-adventures",
       storageBucket: "tuwai-adventures.firebasestorage.app",
       messagingSenderId: "527546498324",
-      appId: "1:527546498324:web:a5ebce034df326dd275601"
+      appId: "1:527546498324:web:a5ebce034df326dd275601",
+      measurementId: "G-VYCLNMMGVV"
     };
     try{
       firebase.initializeApp(firebaseConfig);
+      firebase.analytics();
     } catch(e){
       console.warn('Firebase init failed, using built-in images only.', e);
       return;
