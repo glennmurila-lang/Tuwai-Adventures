@@ -507,6 +507,37 @@
     .testi-track{animation:none;}
   }
 
+  /* ---------- RATE YOUR EXPERIENCE ---------- */
+  .rating-section{padding:70px 0;}
+  .rating-summary{
+    display:flex; align-items:center; gap:14px; margin-bottom:32px; flex-wrap:wrap;
+  }
+  .rating-summary-stars{font-size:1.6rem; color:var(--terracotta); letter-spacing:2px;}
+  .rating-summary-text{font-size:0.92rem; color:rgba(43,33,26,0.6); font-family:'IBM Plex Mono';}
+  .rating-form-card{
+    background:var(--cream-2); border:1px solid var(--line); border-radius:18px;
+    padding:32px; max-width:560px;
+  }
+  .rating-picker{display:flex; gap:6px; margin-bottom:20px;}
+  .rating-star{
+    background:none; border:none; font-size:2.2rem; line-height:1; cursor:pointer;
+    color:rgba(43,33,26,0.22); transition:color .15s, transform .15s; padding:0;
+  }
+  .rating-star:hover{transform:scale(1.12);}
+  .rating-star.is-active{color:var(--terracotta);}
+  .rating-form-fields{display:flex; flex-direction:column; gap:12px;}
+  .rating-form-fields input, .rating-form-fields textarea{
+    width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px;
+    font-family:'Inter'; font-size:0.92rem; background:var(--cream); color:var(--ink);
+    resize:vertical;
+  }
+  .rating-form-fields input:focus, .rating-form-fields textarea:focus{
+    outline:2px solid var(--terracotta); outline-offset:1px;
+  }
+  .rating-form-status{font-size:0.84rem; min-height:18px;}
+  .rating-form-status.ok{color:var(--sage);}
+  .rating-form-status.err{color:#c0392b;}
+
   /* ---------- WHATSAPP BOOKING ---------- */
   .wa-section{
     background-image:
@@ -1052,6 +1083,37 @@
   <div class="testi-track-wrap">
     <div class="testi-track" id="testiTrack">
       <!-- Cards are generated from the TESTIMONIALS list in the script at the bottom of this file. -->
+    </div>
+  </div>
+</section>
+
+<section class="rating-section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Tell us how we did</div>
+      <h2>Rate your experience.</h2>
+      <p>Been on a Tuwai trip? A quick rating helps other travellers — and helps us improve.</p>
+    </div>
+
+    <div class="rating-summary" id="ratingSummary">
+      <span class="rating-summary-stars" id="ratingSummaryStars">☆☆☆☆☆</span>
+      <span class="rating-summary-text" id="ratingSummaryText">No ratings yet — be the first!</span>
+    </div>
+
+    <div class="rating-form-card">
+      <div class="rating-picker" id="ratingPicker">
+        <button type="button" class="rating-star" data-star="1" aria-label="1 star">★</button>
+        <button type="button" class="rating-star" data-star="2" aria-label="2 stars">★</button>
+        <button type="button" class="rating-star" data-star="3" aria-label="3 stars">★</button>
+        <button type="button" class="rating-star" data-star="4" aria-label="4 stars">★</button>
+        <button type="button" class="rating-star" data-star="5" aria-label="5 stars">★</button>
+      </div>
+      <div class="rating-form-fields">
+        <input type="text" id="ratingNameInput" placeholder="Your name (optional)">
+        <textarea id="ratingCommentInput" rows="2" placeholder="Say a bit about your trip (optional)"></textarea>
+        <button type="button" class="btn btn-primary" id="ratingSubmitBtn" onclick="submitRating()">Submit rating</button>
+        <div class="rating-form-status" id="ratingFormStatus"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -1634,12 +1696,12 @@
   }
   function renderNonTourAlbum(){
     const gal = NONTOUR_GALLERIES[currentNonTour];
-    document.getElementById('nonTourImage').innerHTML = generateScene(gal.scene, currentNonTourPhoto * 6);
+    document.getElementById('nonTourImage').innerHTML = photoOrScene(gal, currentNonTourPhoto, currentNonTourPhoto * 6);
     document.getElementById('nonTourTitle').textContent = gal.name + ' — ' + gal.photos[currentNonTourPhoto];
     document.getElementById('nonTourDesc').textContent = (currentNonTourPhoto + 1) + ' of ' + gal.photos.length + ' photos';
     document.getElementById('nonTourThumbs').innerHTML = gal.photos.map((caption, i) => `
       <button type="button" class="gallery-thumb ${i === currentNonTourPhoto ? 'is-active' : ''}" onclick="jumpToNonTourPhoto(${i})" aria-label="${caption}">
-        ${generateScene(gal.scene, i * 6)}
+        ${photoOrScene(gal, i, i * 6)}
       </button>`).join('');
   }
   function nonTourPrev(){
@@ -1697,6 +1759,94 @@
       if(e.key === 'Escape') closeAboutModal();
     }
   });
+
+  // ---------- Rate Your Experience ----------
+  let selectedRating = 0;
+  const ratingStars = document.querySelectorAll('.rating-star');
+  ratingStars.forEach(function(star){
+    star.addEventListener('click', function(){
+      selectedRating = parseInt(star.dataset.star, 10);
+      updateStarDisplay();
+    });
+    star.addEventListener('mouseenter', function(){
+      previewStars(parseInt(star.dataset.star, 10));
+    });
+  });
+  const ratingPickerEl = document.getElementById('ratingPicker');
+  if(ratingPickerEl){
+    ratingPickerEl.addEventListener('mouseleave', updateStarDisplay);
+  }
+  function previewStars(n){
+    ratingStars.forEach(function(s){
+      s.classList.toggle('is-active', parseInt(s.dataset.star, 10) <= n);
+    });
+  }
+  function updateStarDisplay(){
+    previewStars(selectedRating);
+  }
+
+  function submitRating(){
+    const statusEl = document.getElementById('ratingFormStatus');
+    if(selectedRating < 1){
+      statusEl.textContent = 'Pick a star rating first';
+      statusEl.className = 'rating-form-status err';
+      return;
+    }
+    const name = document.getElementById('ratingNameInput').value.trim();
+    const comment = document.getElementById('ratingCommentInput').value.trim();
+    const btn = document.getElementById('ratingSubmitBtn');
+    btn.disabled = true;
+    statusEl.textContent = 'Submitting...';
+    statusEl.className = 'rating-form-status';
+
+    if(window.db){
+      window.db.collection('ratings').add({
+        stars: selectedRating, name: name, comment: comment,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function(){
+        return window.db.collection('stats').doc('ratings').set({
+          sum: firebase.firestore.FieldValue.increment(selectedRating),
+          count: firebase.firestore.FieldValue.increment(1)
+        }, { merge: true });
+      }).then(function(){
+        statusEl.textContent = 'Thanks for the feedback!';
+        statusEl.className = 'rating-form-status ok';
+        btn.disabled = false;
+        document.getElementById('ratingNameInput').value = '';
+        document.getElementById('ratingCommentInput').value = '';
+        selectedRating = 0;
+        updateStarDisplay();
+        loadRatingSummary();
+      }).catch(function(err){
+        console.error('Could not save rating:', err);
+        statusEl.textContent = 'Something went wrong — try again in a moment.';
+        statusEl.className = 'rating-form-status err';
+        btn.disabled = false;
+      });
+    } else {
+      statusEl.textContent = 'Could not connect — try again in a moment.';
+      statusEl.className = 'rating-form-status err';
+      btn.disabled = false;
+    }
+  }
+
+  function loadRatingSummary(){
+    if(!window.db) return;
+    window.db.collection('stats').doc('ratings').get().then(function(doc){
+      const starsEl = document.getElementById('ratingSummaryStars');
+      const textEl = document.getElementById('ratingSummaryText');
+      if(!doc.exists || !doc.data().count){
+        return;
+      }
+      const data = doc.data();
+      const avg = data.sum / data.count;
+      const rounded = Math.round(avg);
+      starsEl.textContent = '★★★★★'.slice(0, rounded) + '☆☆☆☆☆'.slice(0, 5 - rounded);
+      textEl.textContent = avg.toFixed(1) + ' average from ' + data.count + (data.count === 1 ? ' rating' : ' ratings');
+    }).catch(function(err){
+      console.warn('Could not load rating summary:', err);
+    });
+  }
 
   function handleSubmit(e){
     e.preventDefault();
@@ -1824,6 +1974,7 @@
     }
     const db = firebase.firestore();
     window.db = db;
+    if(typeof loadRatingSummary === 'function') loadRatingSummary();
 
     // Background-image recipes that must be preserved when a slot's
     // photo is swapped in (gradient fade layer + the photo layer).
@@ -1901,6 +2052,21 @@
           document.querySelectorAll('.dest-visual[data-dest-package="' + pIndex + '"]').forEach(function(el){
             el.style.backgroundImage = 'url("' + url + '")';
           });
+        }
+      }
+      // Non-Tour Adventures gallery photos: nontour-{categoryIndex}-{photoIndex}
+      const nonTourMatch = /^nontour-(\d+)-(\d+)$/.exec(slotId);
+      if(nonTourMatch){
+        const cIndex = parseInt(nonTourMatch[1], 10);
+        const phIndex = parseInt(nonTourMatch[2], 10);
+        if(typeof NONTOUR_GALLERIES !== 'undefined' && NONTOUR_GALLERIES[cIndex]){
+          NONTOUR_GALLERIES[cIndex].realPhotoUrls = NONTOUR_GALLERIES[cIndex].realPhotoUrls || {};
+          NONTOUR_GALLERIES[cIndex].realPhotoUrls[phIndex] = url;
+          const albumView = document.getElementById('galleryAlbumView');
+          const nonTourModal = document.getElementById('nonTourModal');
+          if(nonTourModal && nonTourModal.classList.contains('is-open') && typeof renderNonTourAlbum === 'function'){
+            renderNonTourAlbum();
+          }
         }
       }
     }
