@@ -194,6 +194,44 @@
       </div>
     </div>
 
+    <h2 class="section-title">Contact info</h2>
+    <p class="section-sub">Updates the phone number and email shown on the site, plus every WhatsApp/call button — all in one place.</p>
+    <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
+      <div class="slot-body">
+        <div class="field">
+          <label for="contactPhoneInput">Phone number (used for WhatsApp &amp; calls)</label>
+          <input type="text" id="contactPhoneInput" placeholder="+254 116 560 690">
+        </div>
+        <div class="field">
+          <label for="contactEmailInput">Email</label>
+          <input type="email" id="contactEmailInput" placeholder="bookings@tuwaiadventure.co.ke">
+        </div>
+        <div class="slot-upload-row">
+          <button class="slot-upload-btn" onclick="saveContactInfo()">Save contact info</button>
+        </div>
+        <div class="slot-status" id="status-contact-info"></div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Social links</h2>
+    <p class="section-sub">Instagram is already live. Add a TikTok link and it'll appear automatically in the menu and footer.</p>
+    <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
+      <div class="slot-body">
+        <div class="field">
+          <label for="socialInstagramInput">Instagram link</label>
+          <input type="url" id="socialInstagramInput" placeholder="https://www.instagram.com/tuwaiadventures">
+        </div>
+        <div class="field">
+          <label for="socialTiktokInput">TikTok link</label>
+          <input type="url" id="socialTiktokInput" placeholder="https://www.tiktok.com/@tuwaiadventures">
+        </div>
+        <div class="slot-upload-row">
+          <button class="slot-upload-btn" onclick="saveSocialLinks()">Save social links</button>
+        </div>
+        <div class="slot-status" id="status-social-links"></div>
+      </div>
+    </div>
+
     <h2 class="section-title">About page</h2>
     <p class="section-sub">The full "About Tuwai Adventures" popup. For the Story, Values, and "Why travel with us" boxes: leave a blank line between paragraphs, or one item per line for the list. Leave any box empty to keep the current version.</p>
     <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
@@ -380,6 +418,85 @@
     loadTrustStats();
     loadHeroText();
     loadAboutText();
+    loadContactInfo();
+    loadSocialLinks();
+  }
+
+  const DEFAULT_CONTACT_INFO = {
+    phone: "+254 116 560 690",
+    email: "bookings@tuwaiadventure.co.ke"
+  };
+
+  function loadContactInfo(){
+    document.getElementById('contactPhoneInput').value = DEFAULT_CONTACT_INFO.phone;
+    document.getElementById('contactEmailInput').value = DEFAULT_CONTACT_INFO.email;
+    db.collection('content').doc('contact').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.phone) document.getElementById('contactPhoneInput').value = data.phone;
+      if(data.email) document.getElementById('contactEmailInput').value = data.email;
+    }).catch(function(err){
+      console.error('Could not load contact info:', err);
+    });
+  }
+
+  function saveContactInfo(){
+    const phone = document.getElementById('contactPhoneInput').value.trim();
+    const email = document.getElementById('contactEmailInput').value.trim();
+    const statusEl = document.getElementById('status-contact-info');
+    if(!phone || !email){
+      statusEl.textContent = 'Both fields are required';
+      statusEl.className = 'slot-status err';
+      return;
+    }
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+    db.collection('content').doc('contact').set({
+      phone: phone, email: email,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).then(function(){
+      statusEl.textContent = 'Saved \u2713';
+      statusEl.className = 'slot-status ok';
+    }).catch(function(err){
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'slot-status err';
+    });
+  }
+
+  const DEFAULT_SOCIAL_LINKS = {
+    instagram: "https://www.instagram.com/tuwaiadventures",
+    tiktok: ""
+  };
+
+  function loadSocialLinks(){
+    document.getElementById('socialInstagramInput').value = DEFAULT_SOCIAL_LINKS.instagram;
+    document.getElementById('socialTiktokInput').value = DEFAULT_SOCIAL_LINKS.tiktok;
+    db.collection('content').doc('social').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.instagram) document.getElementById('socialInstagramInput').value = data.instagram;
+      if(data.tiktok) document.getElementById('socialTiktokInput').value = data.tiktok;
+    }).catch(function(err){
+      console.error('Could not load social links:', err);
+    });
+  }
+
+  function saveSocialLinks(){
+    const instagram = document.getElementById('socialInstagramInput').value.trim();
+    const tiktok = document.getElementById('socialTiktokInput').value.trim();
+    const statusEl = document.getElementById('status-social-links');
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+    db.collection('content').doc('social').set({
+      instagram: instagram, tiktok: tiktok,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).then(function(){
+      statusEl.textContent = 'Saved \u2713';
+      statusEl.className = 'slot-status ok';
+    }).catch(function(err){
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'slot-status err';
+    });
   }
 
   const DEFAULT_ABOUT_TEXT = {
