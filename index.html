@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#241408">
 <title>Tuwai Adventures — Kenya Safaris, Staycations &amp; Getaways | Tours &amp; Team Building</title>
 <meta name="description" content="Tuwai Adventures plans unforgettable Kenya safaris, coastal escapes, weekend staycations, hotel bookings and corporate team-building trips. Based in Nairobi, serving Kenya and beyond — book on WhatsApp today.">
 <meta name="keywords" content="Tuwai Adventures, Kenya safaris, Maasai Mara tours, Nairobi staycations, Kenya getaways, corporate team building Kenya, Diani Coast holidays, Amboseli safari, weekend getaways Kenya, Kenya travel agency">
@@ -53,6 +55,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
+    color-scheme: light;
     --bark: #241408;
     --bark-2: #2f1c0e;
     --terracotta: #c35b28;
@@ -831,7 +834,7 @@
 <div class="trust">
   <div class="wrap">
     <div class="trust-item"><strong>Since 2025</strong></div>
-    <div class="trust-item"><strong><span class="count-up" id="statCustomers" data-target="100">0</span>+</strong><span>stakeholders served, and counting</span></div>
+    <div class="trust-item"><strong><span class="count-up" id="statCustomers" data-target="100">0</span>+</strong><span>stakeholders served</span></div>
     <div class="trust-item"><strong><span class="count-up" id="statAdventures" data-target="70">0</span>+</strong><span>experiences created</span></div>
     <div class="trust-item"><strong>24/7</strong><span>online &amp; mobile support</span></div>
   </div>
@@ -1190,24 +1193,27 @@
 
     <div class="about-content">
       <div class="eyebrow" style="color:var(--terracotta); margin-bottom:10px;">About Tuwai Adventures</div>
-      <h3 class="about-title">More Than a Journey. A Story Worth Living.</h3>
+      <h3 class="about-title" id="aboutTagline">More Than a Journey. A Story Worth Living.</h3>
 
+      <div id="aboutStoryBlock">
       <p>At Tuwai Adventures, we believe that the greatest souvenirs aren't bought—they're lived.</p>
       <p>Born from a passion for Kenya's breathtaking landscapes, rich cultures, and untamed wildlife, we create experiences that inspire wonder, strengthen connections, and leave you with stories you'll tell for a lifetime.</p>
       <p>Whether you're chasing the golden sunrise across the Maasai Mara, unwinding along the turquoise shores of Diani, escaping to a peaceful countryside retreat, or discovering hidden gems just a few hours from home, every journey with us is thoughtfully crafted to feel effortless, authentic, and unforgettable.</p>
       <p>We believe travel isn't about ticking destinations off a list. It's about the laughter shared around a campfire, the silence of watching elephants cross the plains at dawn, the excitement of discovering somewhere new, and the memories that become part of who you are.</p>
       <p>From solo travellers and couples to families, corporate retreats, and groups of friends, we are here to make every adventure seamless—from the moment you enquire to the moment you return home already dreaming of your next escape.</p>
       <p class="about-emphasis">Because life is too beautiful to experience only through a screen.<br>Let's write your next story together.</p>
+      </div>
 
       <div class="about-divider"></div>
 
       <h4 class="about-subhead">Our Vision</h4>
-      <p>To become Africa's most trusted travel and experiences platform, connecting people with unforgettable adventures, authentic hospitality, and destinations that create lifelong memories.</p>
+      <p id="aboutVisionText">To become Africa's most trusted travel and experiences platform, connecting people with unforgettable adventures, authentic hospitality, and destinations that create lifelong memories.</p>
 
       <h4 class="about-subhead">Our Mission</h4>
-      <p>To make extraordinary travel experiences accessible, effortless, and memorable by connecting travellers with carefully curated safaris, staycations, coastal escapes, cultural experiences, and adventure destinations across Kenya and beyond.</p>
+      <p id="aboutMissionText">To make extraordinary travel experiences accessible, effortless, and memorable by connecting travellers with carefully curated safaris, staycations, coastal escapes, cultural experiences, and adventure destinations across Kenya and beyond.</p>
 
       <h4 class="about-subhead">Our Values</h4>
+      <div id="aboutValuesBlock">
       <div class="about-values-grid">
         <div class="about-value-item">
           <span class="about-value-emoji">🌿</span>
@@ -1230,9 +1236,10 @@
           <div><strong>Excellence</strong><p>From planning to the final destination, every detail matters.</p></div>
         </div>
       </div>
+      </div>
 
       <h4 class="about-subhead">Why Travel With Tuwai Adventures?</h4>
-      <ul class="about-why-list">
+      <ul class="about-why-list" id="aboutWhyList">
         <li>Curated safari, beach, staycation, and adventure experiences.</li>
         <li>Trusted local expertise with personalised travel planning.</li>
         <li>Flexible options for individuals, families, couples, and corporate groups.</li>
@@ -1242,7 +1249,7 @@
 
       <div class="about-divider"></div>
 
-      <p class="about-founder-note">Founded in the vision and passion of our founder, Jane Muigai, we are steering day by day to new surroundings, creating and sharing memories and stories curved into our pages of history and a lifetime worth curving a long life smile into the old golden days.</p>
+      <p class="about-founder-note" id="aboutFounderNote">Founded in the vision and passion of our founder, Jane Muigai, we are steering day by day to new surroundings, creating and sharing memories and stories curved into our pages of history and a lifetime worth curving a long life smile into the old golden days.</p>
     </div>
   </div>
 </div>
@@ -1933,6 +1940,56 @@
       });
     }).catch(function(err){
       console.warn('Could not load saved hero text, using built-in defaults.', err);
+    });
+
+    // About section — editable from the dashboard. Story/Values/Why-list are
+    // stored as plain text (blank line = new paragraph, or one item per line)
+    // and rebuilt here into the right HTML structure.
+    db.collection('content').doc('about').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.tagline){
+        const el = document.getElementById('aboutTagline');
+        if(el) el.textContent = data.tagline;
+      }
+      if(data.story){
+        const el = document.getElementById('aboutStoryBlock');
+        if(el){
+          el.innerHTML = data.story.split(/\n\s*\n/).map(function(p){
+            return '<p>' + p.trim().replace(/\n/g, '<br>') + '</p>';
+          }).join('');
+        }
+      }
+      if(data.vision){
+        const el = document.getElementById('aboutVisionText');
+        if(el) el.textContent = data.vision;
+      }
+      if(data.mission){
+        const el = document.getElementById('aboutMissionText');
+        if(el) el.textContent = data.mission;
+      }
+      if(data.values){
+        const el = document.getElementById('aboutValuesBlock');
+        if(el){
+          el.innerHTML = data.values.split(/\n\s*\n/).map(function(p){
+            return '<p>' + p.trim().replace(/\n/g, '<br>') + '</p>';
+          }).join('');
+        }
+      }
+      if(data.whyList){
+        const el = document.getElementById('aboutWhyList');
+        if(el){
+          el.innerHTML = data.whyList.split('\n').filter(function(l){ return l.trim(); }).map(function(l){
+            return '<li>' + l.trim() + '</li>';
+          }).join('');
+        }
+      }
+      if(data.founderNote){
+        const el = document.getElementById('aboutFounderNote');
+        if(el) el.textContent = data.founderNote;
+      }
+    }).catch(function(err){
+      console.warn('Could not load saved About text, using built-in defaults.', err);
     });
 
     db.collection('images').get().then(function(snapshot){
