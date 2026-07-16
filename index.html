@@ -802,8 +802,8 @@
 <div class="trust">
   <div class="wrap">
     <div class="trust-item"><strong>Since 2025</strong></div>
-    <div class="trust-item"><strong><span class="count-up" data-target="100">0</span>+</strong><span>customers served, and counting</span></div>
-    <div class="trust-item"><strong><span class="count-up" data-target="70">0</span>+</strong><span>local adventures completed</span></div>
+    <div class="trust-item"><strong><span class="count-up" id="statCustomers" data-target="100">0</span>+</strong><span>customers served, and counting</span></div>
+    <div class="trust-item"><strong><span class="count-up" id="statAdventures" data-target="70">0</span>+</strong><span>local adventures completed</span></div>
     <div class="trust-item"><strong>24/7</strong><span>on-ground support while you travel</span></div>
   </div>
 </div>
@@ -1813,6 +1813,25 @@
       count: firebase.firestore.FieldValue.increment(1)
     }, { merge: true }).catch(function(err){
       console.warn('Visit counter update failed (non-critical).', err);
+    });
+
+    // "100+ customers served" / "70+ local adventures completed" — updatable
+    // from the dashboard as the real numbers grow.
+    db.collection('stats').doc('trust').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      const custEl = document.getElementById('statCustomers');
+      const advEl = document.getElementById('statAdventures');
+      if(custEl && data.customers !== undefined){
+        custEl.dataset.target = data.customers;
+        animateCount(custEl, data.customers, 1200);
+      }
+      if(advEl && data.adventures !== undefined){
+        advEl.dataset.target = data.adventures;
+        animateCount(advEl, data.adventures, 1200);
+      }
+    }).catch(function(err){
+      console.warn('Could not load saved trust stats, using built-in defaults.', err);
     });
 
     db.collection('images').get().then(function(snapshot){
