@@ -751,6 +751,29 @@
     .gallery-album-image-wrap{height:220px;}
   }
 
+  /* ---------- ENGAGEMENT POPUP ---------- */
+  .engage-popup{
+    position:fixed; bottom:20px; right:20px; z-index:90;
+    background:var(--bark); color:var(--cream); border-radius:16px;
+    padding:22px 22px 20px; max-width:300px; width:calc(100% - 40px);
+    box-shadow:0 20px 50px rgba(0,0,0,0.3);
+    transform:translateY(140%); opacity:0; transition:transform .4s ease, opacity .4s ease;
+    pointer-events:none;
+  }
+  .engage-popup.is-open{transform:translateY(0); opacity:1; pointer-events:auto;}
+  .engage-popup-close{
+    position:absolute; top:10px; right:12px; background:none; border:none;
+    color:rgba(247,241,230,0.6); font-size:1.2rem; cursor:pointer; line-height:1;
+  }
+  .engage-popup-close:hover{color:var(--cream);}
+  .engage-popup p{
+    font-size:0.92rem; line-height:1.5; margin:0 0 16px; padding-right:14px; color:rgba(247,241,230,0.9);
+  }
+  .engage-popup .btn{width:100%; justify-content:center; font-size:0.88rem; padding:11px 18px;}
+  @media (max-width:480px){
+    .engage-popup{left:20px; right:20px; bottom:16px; max-width:none;}
+  }
+
   /* ---------- ABOUT MODAL ---------- */
   .about-modal-panel{max-width:720px;}
   .about-title{
@@ -1205,6 +1228,12 @@
     </div>
   </div>
 </footer>
+
+<div class="engage-popup" id="engagePopup" role="status" aria-live="polite">
+  <button type="button" class="engage-popup-close" onclick="closeEngagePopup()" aria-label="Dismiss">&times;</button>
+  <p id="engagePopupText"></p>
+  <a href="https://wa.me/254116560690?text=Hi%20Tuwai%20Adventures%2C%20I'd%20like%20to%20plan%20a%20trip." class="btn btn-primary wa-track-click" id="engagePopupCta" target="_blank" rel="noopener">Chat on WhatsApp</a>
+</div>
 
 <div class="gallery-modal" id="galleryModal" role="dialog" aria-modal="true" aria-label="Tours and Safaris package gallery">
   <div class="gallery-modal-backdrop" onclick="closeGallery()"></div>
@@ -1899,8 +1928,60 @@
           console.warn('WhatsApp click tracking failed (non-critical).', err);
         });
       }
+      waClickedAt = Date.now();
     });
   });
+
+  // ============================================================
+  // ENGAGEMENT POPUP — a single friendly nudge, shown at most once
+  // per visit, from whichever of these three fires first:
+  //   1. Exit intent  (mouse moves toward closing the tab)
+  //   2. WhatsApp return (clicked "Book on WhatsApp", came back to the tab)
+  //   3. Time on page (been browsing a while without clicking anything)
+  // Wording for all three is editable from the dashboard.
+  // ============================================================
+  const DEFAULT_POPUP_MESSAGES = {
+    exitIntent: "Before you go — need help planning your next adventure?",
+    whatsappReturn: "Still deciding? We're just a message away — happy to help you plan.",
+    timeOnPage: "Need a hand deciding? We're here to help you plan the perfect trip."
+  };
+  let POPUP_MESSAGES = Object.assign({}, DEFAULT_POPUP_MESSAGES);
+  let waClickedAt = null;
+  const ENGAGE_SESSION_KEY = 'tuwaiEngagePopupShown';
+
+  function showEngagePopup(message){
+    if(sessionStorage.getItem(ENGAGE_SESSION_KEY)) return;
+    const popup = document.getElementById('engagePopup');
+    const textEl = document.getElementById('engagePopupText');
+    if(!popup || !textEl) return;
+    textEl.textContent = message;
+    popup.classList.add('is-open');
+    sessionStorage.setItem(ENGAGE_SESSION_KEY, '1');
+  }
+  function closeEngagePopup(){
+    const popup = document.getElementById('engagePopup');
+    if(popup) popup.classList.remove('is-open');
+  }
+
+  // Trigger 1: exit intent (desktop — mouse leaves toward the top of the window)
+  document.addEventListener('mouseleave', function(e){
+    if(e.clientY <= 0){
+      showEngagePopup(POPUP_MESSAGES.exitIntent);
+    }
+  });
+
+  // Trigger 2: WhatsApp return (waClickedAt is set by the click tracker above)
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible' && waClickedAt && (Date.now() - waClickedAt) > 3000){
+      showEngagePopup(POPUP_MESSAGES.whatsappReturn);
+      waClickedAt = null;
+    }
+  });
+
+  // Trigger 3: time on page
+  setTimeout(function(){
+    showEngagePopup(POPUP_MESSAGES.timeOnPage);
+  }, 45000);
 
   const revealEls = document.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries)=>{
@@ -2188,9 +2269,23 @@
 
         const waSectionLink = document.getElementById('waSectionLink');
         if(waSectionLink) waSectionLink.href = waHref;
+
+        const engagePopupCta = document.getElementById('engagePopupCta');
+        if(engagePopupCta) engagePopupCta.href = waHref;
       }
     }).catch(function(err){
       console.warn('Could not load saved contact info, using built-in defaults.', err);
+    });
+
+    // Engagement popup wording — editable from the dashboard.
+    db.collection('content').doc('popups').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.exitIntent) POPUP_MESSAGES.exitIntent = data.exitIntent;
+      if(data.whatsappReturn) POPUP_MESSAGES.whatsappReturn = data.whatsappReturn;
+      if(data.timeOnPage) POPUP_MESSAGES.timeOnPage = data.timeOnPage;
+    }).catch(function(err){
+      console.warn('Could not load saved popup messages, using built-in defaults.', err);
     });
 
     // Social links — Instagram is shown by default; TikTok only appears
