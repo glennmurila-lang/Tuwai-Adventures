@@ -149,6 +149,29 @@
       <span class="visit-counter-label">total site visits (all time)</span>
     </div>
 
+    <h2 class="section-title">Hero text</h2>
+    <p class="section-sub">The three lines of copy in the hero section, under the "Adventure calling" widget.</p>
+    <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
+      <div class="slot-body">
+        <div class="field">
+          <label for="heroPara1Input">Paragraph 1</label>
+          <input type="text" id="heroPara1Input" placeholder="First line">
+        </div>
+        <div class="field">
+          <label for="heroPara2Input">Paragraph 2</label>
+          <input type="text" id="heroPara2Input" placeholder="Second line">
+        </div>
+        <div class="field">
+          <label for="heroPara3Input">Paragraph 3</label>
+          <input type="text" id="heroPara3Input" placeholder="Third line">
+        </div>
+        <div class="slot-upload-row">
+          <button class="slot-upload-btn" onclick="saveHeroText()">Save hero text</button>
+        </div>
+        <div class="slot-status" id="status-hero-text"></div>
+      </div>
+    </div>
+
     <h2 class="section-title">Homepage stats</h2>
     <p class="section-sub">The "100+ customers served" and "70+ local adventures completed" numbers near the top of the site. Update these as the real numbers grow.</p>
     <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
@@ -292,6 +315,52 @@
     loadTestimonialData();
     loadVisitCount();
     loadTrustStats();
+    loadHeroText();
+  }
+
+  const DEFAULT_HERO_TEXT = {
+    para1: "Your sofa has heard one too many of your stories. What tale will you tell next? Isn't the world too beautiful to see only through a screen?",
+    para2: "Worried about budget, or think adventure is too far away? Tired of gloomy sunsets by your window? Guess what — an experience seems so far yet so close. A Hakuna Matata experience awaits, closer than you think.",
+    para3: "Weekend escape, staycation, safari, or coastal getaway — whatever's calling your name, let's write the next story of an experience together."
+  };
+
+  function loadHeroText(){
+    document.getElementById('heroPara1Input').value = DEFAULT_HERO_TEXT.para1;
+    document.getElementById('heroPara2Input').value = DEFAULT_HERO_TEXT.para2;
+    document.getElementById('heroPara3Input').value = DEFAULT_HERO_TEXT.para3;
+    db.collection('content').doc('hero').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.para1) document.getElementById('heroPara1Input').value = data.para1;
+      if(data.para2) document.getElementById('heroPara2Input').value = data.para2;
+      if(data.para3) document.getElementById('heroPara3Input').value = data.para3;
+    }).catch(function(err){
+      console.error('Could not load hero text:', err);
+    });
+  }
+
+  function saveHeroText(){
+    const para1 = document.getElementById('heroPara1Input').value.trim();
+    const para2 = document.getElementById('heroPara2Input').value.trim();
+    const para3 = document.getElementById('heroPara3Input').value.trim();
+    const statusEl = document.getElementById('status-hero-text');
+    if(!para1 || !para2 || !para3){
+      statusEl.textContent = 'All three boxes need text';
+      statusEl.className = 'slot-status err';
+      return;
+    }
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+    db.collection('content').doc('hero').set({
+      para1: para1, para2: para2, para3: para3,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).then(function(){
+      statusEl.textContent = 'Saved \u2713';
+      statusEl.className = 'slot-status ok';
+    }).catch(function(err){
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'slot-status err';
+    });
   }
 
   function loadVisitCount(){
