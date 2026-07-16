@@ -1842,12 +1842,8 @@
     if(window.db){
       window.db.collection('ratings').add({
         stars: selectedRating, name: name, comment: comment,
+        status: 'pending',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(function(){
-        return window.db.collection('stats').doc('ratings').set({
-          sum: firebase.firestore.FieldValue.increment(selectedRating),
-          count: firebase.firestore.FieldValue.increment(1)
-        }, { merge: true });
       }).then(function(){
         statusEl.textContent = 'Thanks for the feedback!';
         statusEl.className = 'rating-form-status ok';
@@ -1856,7 +1852,6 @@
         document.getElementById('ratingCommentInput').value = '';
         selectedRating = 0;
         updateStarDisplay();
-        loadRatingSummary();
       }).catch(function(err){
         console.error('Could not save rating:', err);
         statusEl.textContent = 'Something went wrong — try again in a moment.';
