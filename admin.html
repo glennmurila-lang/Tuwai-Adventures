@@ -114,6 +114,15 @@
     font-family:'Bricolage Grotesque'; font-weight:800; font-size:2rem; color:var(--terracotta);
   }
   .visit-counter-label{font-size:0.85rem; color:rgba(43,33,26,0.55); font-family:'IBM Plex Mono';}
+  .lead-card{
+    background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 20px; margin-bottom:12px;
+  }
+  .lead-top{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:8px;}
+  .lead-name{font-weight:700; color:var(--bark); font-size:0.98rem;}
+  .lead-time{font-family:'IBM Plex Mono'; font-size:0.72rem; color:rgba(43,33,26,0.45);}
+  .lead-meta{font-size:0.82rem; color:rgba(43,33,26,0.6); margin-bottom:6px;}
+  .lead-message{font-size:0.9rem; color:rgba(43,33,26,0.75);}
+  .lead-empty{color:rgba(43,33,26,0.5); font-size:0.9rem; padding:20px 0;}
 </style>
 </head>
 <body>
@@ -144,10 +153,20 @@
   </header>
 
   <div class="wrap">
-    <div class="visit-counter-card" id="visitCounterCard">
-      <span class="visit-counter-number" id="visitCounterNumber">—</span>
-      <span class="visit-counter-label">total site visits (all time)</span>
+    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+      <div class="visit-counter-card" id="visitCounterCard" style="flex:1; min-width:220px;">
+        <span class="visit-counter-number" id="visitCounterNumber">—</span>
+        <span class="visit-counter-label">total site visits (all time)</span>
+      </div>
+      <div class="visit-counter-card" id="waClickCard" style="flex:1; min-width:220px;">
+        <span class="visit-counter-number" id="waClickNumber">—</span>
+        <span class="visit-counter-label">"Book on WhatsApp" clicks (all time)</span>
+      </div>
     </div>
+
+    <h2 class="section-title">Enquiries</h2>
+    <p class="section-sub">Everyone who's submitted the contact form on the site, most recent first.</p>
+    <div id="leadsList"><!-- filled by script --></div>
 
     <h2 class="section-title">Hero text</h2>
     <p class="section-sub">The three lines of copy in the hero section, under the "Adventure calling" widget.</p>
@@ -314,6 +333,8 @@
     loadPackageTextData();
     loadTestimonialData();
     loadVisitCount();
+    loadWaClicks();
+    loadLeads();
     loadTrustStats();
     loadHeroText();
   }
@@ -374,6 +395,46 @@
     }).catch(function(err){
       document.getElementById('visitCounterNumber').textContent = '—';
       console.error('Could not load visit count:', err);
+    });
+  }
+
+  function loadWaClicks(){
+    db.collection('stats').doc('whatsapp_clicks').get().then(function(doc){
+      const numEl = document.getElementById('waClickNumber');
+      if(doc.exists && doc.data().count !== undefined){
+        numEl.textContent = doc.data().count.toLocaleString();
+      } else {
+        numEl.textContent = '0';
+      }
+    }).catch(function(err){
+      document.getElementById('waClickNumber').textContent = '—';
+      console.error('Could not load WhatsApp click count:', err);
+    });
+  }
+
+  function loadLeads(){
+    const listEl = document.getElementById('leadsList');
+    db.collection('leads').orderBy('createdAt', 'desc').limit(50).get().then(function(snapshot){
+      if(snapshot.empty){
+        listEl.innerHTML = '<div class="lead-empty">No enquiries yet — they\'ll show up here as soon as someone submits the contact form.</div>';
+        return;
+      }
+      listEl.innerHTML = snapshot.docs.map(function(doc){
+        const d = doc.data();
+        const when = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString() : 'Just now';
+        return `
+          <div class="lead-card">
+            <div class="lead-top">
+              <span class="lead-name">${(d.name || 'No name given').replace(/</g,'&lt;')}</span>
+              <span class="lead-time">${when}</span>
+            </div>
+            <div class="lead-meta">${(d.email || 'No email').replace(/</g,'&lt;')} &middot; ${(d.type || '').replace(/</g,'&lt;')}</div>
+            ${d.message ? `<div class="lead-message">${d.message.replace(/</g,'&lt;')}</div>` : ''}
+          </div>`;
+      }).join('');
+    }).catch(function(err){
+      listEl.innerHTML = '<div class="lead-empty">Could not load enquiries: ' + err.message + '</div>';
+      console.error('Could not load leads:', err);
     });
   }
 
