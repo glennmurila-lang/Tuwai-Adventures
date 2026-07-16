@@ -106,6 +106,14 @@
     background:var(--cream-2); border:1px solid var(--line); border-radius:12px;
     padding:14px 18px; font-size:0.85rem; color:rgba(43,33,26,0.7); margin-bottom:8px;
   }
+  .visit-counter-card{
+    display:flex; align-items:baseline; gap:12px; background:#fff;
+    border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:16px;
+  }
+  .visit-counter-number{
+    font-family:'Bricolage Grotesque'; font-weight:800; font-size:2rem; color:var(--terracotta);
+  }
+  .visit-counter-label{font-size:0.85rem; color:rgba(43,33,26,0.55); font-family:'IBM Plex Mono';}
 </style>
 </head>
 <body>
@@ -136,6 +144,11 @@
   </header>
 
   <div class="wrap">
+    <div class="visit-counter-card" id="visitCounterCard">
+      <span class="visit-counter-number" id="visitCounterNumber">—</span>
+      <span class="visit-counter-label">total site visits (all time)</span>
+    </div>
+
     <div class="top-note">
       Upload a new photo (or video, for the hero) in any box below. It replaces what's live on the site within a few seconds — no need to touch any code. Images should ideally be under 5MB.
     </div>
@@ -258,6 +271,21 @@
     loadAllSlotData();
     loadPackageTextData();
     loadTestimonialData();
+    loadVisitCount();
+  }
+
+  function loadVisitCount(){
+    db.collection('stats').doc('visits').get().then(function(doc){
+      const numEl = document.getElementById('visitCounterNumber');
+      if(doc.exists && doc.data().count !== undefined){
+        numEl.textContent = doc.data().count.toLocaleString();
+      } else {
+        numEl.textContent = '0';
+      }
+    }).catch(function(err){
+      document.getElementById('visitCounterNumber').textContent = '—';
+      console.error('Could not load visit count:', err);
+    });
   }
 
   function loadPackageTextData(){
