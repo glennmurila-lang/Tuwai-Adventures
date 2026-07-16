@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
 <title>Tuwai Adventures — Image Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
+    color-scheme: light;
     --bark:#241408; --terracotta:#c35b28; --terracotta-deep:#a94a1e;
     --gold:#d9b86c; --cream:#f7f1e6; --cream-2:#efe6d3; --ink:#2b211a;
     --sage:#56613f; --line:rgba(43,33,26,0.12); --ok:#3d9c5e; --err:#c0392b;
@@ -31,11 +33,12 @@
   .login-card p{color:rgba(43,33,26,0.6); font-size:0.9rem; margin:0 0 24px;}
   .field{margin-bottom:16px;}
   .field label{display:block; font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--sage); margin-bottom:6px;}
-  .field input{
+  .field input, .field textarea{
     width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px;
     font-family:'Inter'; font-size:0.95rem; background:var(--cream);
   }
-  .field input:focus{outline:2px solid var(--terracotta); outline-offset:1px;}
+  .field textarea{resize:vertical; min-height:80px; line-height:1.5;}
+  .field input:focus, .field textarea:focus{outline:2px solid var(--terracotta); outline-offset:1px;}
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
     background:var(--terracotta); color:#fff; border:none; padding:13px 22px;
@@ -191,6 +194,45 @@
       </div>
     </div>
 
+    <h2 class="section-title">About page</h2>
+    <p class="section-sub">The full "About Tuwai Adventures" popup. For the Story, Values, and "Why travel with us" boxes: leave a blank line between paragraphs, or one item per line for the list. Leave any box empty to keep the current version.</p>
+    <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
+      <div class="slot-body">
+        <div class="field">
+          <label for="aboutTaglineInput">Tagline</label>
+          <input type="text" id="aboutTaglineInput" placeholder="More Than a Journey. A Story Worth Living.">
+        </div>
+        <div class="field">
+          <label for="aboutStoryInput">Story (leave a blank line between paragraphs)</label>
+          <textarea id="aboutStoryInput" rows="8"></textarea>
+        </div>
+        <div class="field">
+          <label for="aboutVisionInput">Our Vision</label>
+          <textarea id="aboutVisionInput" rows="3"></textarea>
+        </div>
+        <div class="field">
+          <label for="aboutMissionInput">Our Mission</label>
+          <textarea id="aboutMissionInput" rows="3"></textarea>
+        </div>
+        <div class="field">
+          <label for="aboutValuesInput">Our Values (optional — replaces the icon grid with plain paragraphs if filled in)</label>
+          <textarea id="aboutValuesInput" rows="5" placeholder="Leave blank to keep the icon grid as-is"></textarea>
+        </div>
+        <div class="field">
+          <label for="aboutWhyListInput">Why Travel With Us (one per line)</label>
+          <textarea id="aboutWhyListInput" rows="5"></textarea>
+        </div>
+        <div class="field">
+          <label for="aboutFounderInput">Founder's note</label>
+          <textarea id="aboutFounderInput" rows="3"></textarea>
+        </div>
+        <div class="slot-upload-row">
+          <button class="slot-upload-btn" onclick="saveAboutText()">Save About page</button>
+        </div>
+        <div class="slot-status" id="status-about-text"></div>
+      </div>
+    </div>
+
     <h2 class="section-title">Homepage stats</h2>
     <p class="section-sub">The "100+ stakeholders served" and "70+ experiences created" numbers near the top of the site. Update these as the real numbers grow.</p>
     <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
@@ -337,6 +379,61 @@
     loadLeads();
     loadTrustStats();
     loadHeroText();
+    loadAboutText();
+  }
+
+  const DEFAULT_ABOUT_TEXT = {
+    tagline: "More Than a Journey. A Story Worth Living.",
+    story: "At Tuwai Adventures, we believe that the greatest souvenirs aren't bought—they're lived.\n\nBorn from a passion for Kenya's breathtaking landscapes, rich cultures, and untamed wildlife, we create experiences that inspire wonder, strengthen connections, and leave you with stories you'll tell for a lifetime.\n\nWhether you're chasing the golden sunrise across the Maasai Mara, unwinding along the turquoise shores of Diani, escaping to a peaceful countryside retreat, or discovering hidden gems just a few hours from home, every journey with us is thoughtfully crafted to feel effortless, authentic, and unforgettable.\n\nWe believe travel isn't about ticking destinations off a list. It's about the laughter shared around a campfire, the silence of watching elephants cross the plains at dawn, the excitement of discovering somewhere new, and the memories that become part of who you are.\n\nFrom solo travellers and couples to families, corporate retreats, and groups of friends, we are here to make every adventure seamless—from the moment you enquire to the moment you return home already dreaming of your next escape.\n\nBecause life is too beautiful to experience only through a screen. Let's write your next story together.",
+    vision: "To become Africa's most trusted travel and experiences platform, connecting people with unforgettable adventures, authentic hospitality, and destinations that create lifelong memories.",
+    mission: "To make extraordinary travel experiences accessible, effortless, and memorable by connecting travellers with carefully curated safaris, staycations, coastal escapes, cultural experiences, and adventure destinations across Kenya and beyond.",
+    whyList: "Curated safari, beach, staycation, and adventure experiences.\nTrusted local expertise with personalised travel planning.\nFlexible options for individuals, families, couples, and corporate groups.\nSeamless booking and dedicated customer support.\nExperiences designed to create stories—not just itineraries.",
+    founderNote: "Founded in the vision and passion of our founder, Jane Muigai, we are steering day by day to new surroundings, creating and sharing memories and stories curved into our pages of history and a lifetime worth curving a long life smile into the old golden days."
+  };
+
+  function loadAboutText(){
+    document.getElementById('aboutTaglineInput').value = DEFAULT_ABOUT_TEXT.tagline;
+    document.getElementById('aboutStoryInput').value = DEFAULT_ABOUT_TEXT.story;
+    document.getElementById('aboutVisionInput').value = DEFAULT_ABOUT_TEXT.vision;
+    document.getElementById('aboutMissionInput').value = DEFAULT_ABOUT_TEXT.mission;
+    document.getElementById('aboutWhyListInput').value = DEFAULT_ABOUT_TEXT.whyList;
+    document.getElementById('aboutFounderInput').value = DEFAULT_ABOUT_TEXT.founderNote;
+    db.collection('content').doc('about').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.tagline) document.getElementById('aboutTaglineInput').value = data.tagline;
+      if(data.story) document.getElementById('aboutStoryInput').value = data.story;
+      if(data.vision) document.getElementById('aboutVisionInput').value = data.vision;
+      if(data.mission) document.getElementById('aboutMissionInput').value = data.mission;
+      if(data.values) document.getElementById('aboutValuesInput').value = data.values;
+      if(data.whyList) document.getElementById('aboutWhyListInput').value = data.whyList;
+      if(data.founderNote) document.getElementById('aboutFounderInput').value = data.founderNote;
+    }).catch(function(err){
+      console.error('Could not load About text:', err);
+    });
+  }
+
+  function saveAboutText(){
+    const statusEl = document.getElementById('status-about-text');
+    const payload = {
+      tagline: document.getElementById('aboutTaglineInput').value.trim(),
+      story: document.getElementById('aboutStoryInput').value.trim(),
+      vision: document.getElementById('aboutVisionInput').value.trim(),
+      mission: document.getElementById('aboutMissionInput').value.trim(),
+      values: document.getElementById('aboutValuesInput').value.trim(),
+      whyList: document.getElementById('aboutWhyListInput').value.trim(),
+      founderNote: document.getElementById('aboutFounderInput').value.trim(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+    db.collection('content').doc('about').set(payload, { merge: true }).then(function(){
+      statusEl.textContent = 'Saved \u2713';
+      statusEl.className = 'slot-status ok';
+    }).catch(function(err){
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'slot-status err';
+    });
   }
 
   const DEFAULT_HERO_TEXT = {
