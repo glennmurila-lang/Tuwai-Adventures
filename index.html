@@ -579,16 +579,21 @@
   /* ---------- NALA CHAT WIDGET ---------- */
   .chat-toggle-btn{
     position:fixed; bottom:24px; right:24px; z-index:95;
-    width:58px; height:58px; border-radius:50%; background:var(--terracotta);
+    width:62px; height:62px; border-radius:50% 50% 6px 50%; background:var(--terracotta);
     border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
     box-shadow:0 10px 28px rgba(195,91,40,0.4); transition:transform .2s;
     overflow:hidden; padding:0;
   }
   .chat-toggle-btn:hover{transform:scale(1.06);}
-  .chat-toggle-avatar-img{width:100%; height:100%; object-fit:cover; border-radius:50%;}
+  .chat-toggle-avatar-img{width:100%; height:100%; object-fit:cover; border-radius:50% 50% 6px 50%;}
   .chat-toggle-icon{display:none;}
+  .chat-toggle-badge{
+    position:absolute; bottom:-4px; right:-4px; width:26px; height:26px; border-radius:50%;
+    background:var(--bark); border:2.5px solid var(--cream);
+    display:flex; align-items:center; justify-content:center; z-index:2;
+  }
   .chat-toggle-dot{
-    position:absolute; top:4px; right:4px; width:12px; height:12px; border-radius:50%;
+    position:absolute; top:2px; right:2px; width:13px; height:13px; border-radius:50%;
     background:#3ddc6b; border:2px solid var(--cream); z-index:1;
   }
   .chat-widget-panel{
