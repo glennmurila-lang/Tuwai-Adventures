@@ -954,7 +954,7 @@
     if(!splash) return;
     document.body.style.overflow = 'hidden';
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var duration = reduced ? 300 : 1600;
+    var duration = reduced ? 300 : 2000;
     setTimeout(function(){
       splash.classList.add('is-hidden');
       document.body.style.overflow = '';
