@@ -456,6 +456,16 @@
   }
   .btn-ghost-dark:hover{border-color:var(--terracotta); color:var(--terracotta); transform:translateY(-2px);}
   .tour-card-btns{display:flex; gap:12px; flex-wrap:wrap;}
+  .tour-subsection{
+    margin-top:24px; padding-top:22px; border-top:1px solid var(--line);
+  }
+  .tour-subsection:first-of-type{margin-top:20px;}
+  .tour-subsection h4{
+    font-family:'Bricolage Grotesque'; font-weight:700; font-size:1.02rem;
+    color:var(--terracotta); margin-bottom:10px;
+  }
+  .tour-subsection p{color:rgba(43,33,26,0.68); font-size:0.9rem; margin-bottom:12px;}
+  .tour-subsection .tag-row{margin-bottom:14px;}
   button.btn-ghost-dark{cursor:pointer; font-family:'Inter';}
 
   .sd-header{margin-bottom:18px;}
@@ -1165,17 +1175,33 @@
       <div class="service-feature reveal" id="tours">
         <h3>Tours &amp; Safaris</h3>
         <p>Curated game drives, coastal escapes and cultural routes across Kenya — paced for first-timers and repeat travellers alike.</p>
-        <div class="tag-row">
-          <span class="tag">Maasai Mara</span>
-          <span class="tag">Amboseli</span>
-          <span class="tag">Diani Coast</span>
-          <span class="tag">Tsavo</span>
-          <button type="button" class="tag" onclick="openNonTourGallery(1)">Packages</button>
-          <span class="tag">+12 more in the gallery</span>
+
+        <div class="tour-subsection">
+          <h4>Safari Tours</h4>
+          <div class="tag-row">
+            <span class="tag">Maasai Mara</span>
+            <span class="tag">Amboseli</span>
+            <span class="tag">Diani Coast</span>
+            <span class="tag">Tsavo</span>
+            <span class="tag">+12 more in the gallery</span>
+          </div>
+          <div class="tour-card-btns">
+            <a href="#book" class="btn btn-primary">Plan a safari</a>
+            <button type="button" class="btn btn-ghost-dark" onclick="openGallery()">Browse the gallery</button>
+          </div>
         </div>
-        <div class="tour-card-btns" style="margin-top:22px;">
-          <a href="#book" class="btn btn-primary">Plan a safari</a>
-          <button type="button" class="btn btn-ghost-dark" onclick="openGallery()">Browse the gallery</button>
+
+        <div class="tour-subsection">
+          <h4>Packages</h4>
+          <p>Straightforward hotel reservations across Kenya — vetted properties, resident and visitor rates, and a booking sorted before you arrive.</p>
+          <div class="tag-row">
+            <span class="tag">City hotels</span>
+            <span class="tag">Resort stays</span>
+            <span class="tag">Best rate match</span>
+          </div>
+          <div class="tour-card-btns">
+            <button type="button" class="btn btn-ghost-dark" onclick="openNonTourGallery(1)">Browse gallery (8 photos)</button>
+          </div>
         </div>
       </div>
 
