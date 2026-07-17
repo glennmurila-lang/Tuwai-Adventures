@@ -100,6 +100,22 @@
   .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
   section{position:relative;}
 
+  /* ---------- URGENCY BANNER ---------- */
+  .urgency-banner{
+    display:none; background:var(--terracotta); color:var(--cream);
+    position:relative; z-index:60;
+  }
+  .urgency-banner.is-visible{display:block;}
+  .urgency-banner-inner{
+    max-width:1180px; margin:0 auto; padding:10px 44px 10px 20px; position:relative;
+    font-size:0.86rem; font-weight:600; text-align:center;
+  }
+  .urgency-banner-close{
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:var(--cream); font-size:1.1rem; cursor:pointer; opacity:0.85;
+  }
+  .urgency-banner-close:hover{opacity:1;}
+
   /* ---------- NAV ---------- */
   header{
     position:sticky; top:0; z-index:50;
@@ -507,6 +523,47 @@
     .testi-track{animation:none;}
   }
 
+  /* ---------- PLAN MY ADVENTURE QUIZ ---------- */
+  .quiz-teaser{padding:0 0 10px;}
+  .quiz-teaser-card{
+    background:linear-gradient(120deg, rgba(195,91,40,0.08), rgba(217,184,108,0.1));
+    border:1px solid rgba(195,91,40,0.22); border-radius:20px;
+    padding:32px 36px; display:flex; align-items:center; justify-content:space-between;
+    gap:24px; flex-wrap:wrap;
+  }
+  .quiz-teaser-card h3{font-size:1.3rem; color:var(--bark); margin-bottom:6px;}
+  .quiz-teaser-card p{color:rgba(43,33,26,0.65); font-size:0.92rem;}
+  .quiz-modal-panel{max-width:520px;}
+  .quiz-progress{display:flex; gap:6px; margin-bottom:26px; padding-right:36px;}
+  .quiz-progress-dot{
+    flex:1; height:5px; border-radius:100px; background:var(--cream-2);
+  }
+  .quiz-progress-dot.is-done{background:var(--terracotta);}
+  .quiz-question-eyebrow{font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--terracotta); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:10px;}
+  .quiz-question-text{font-size:1.25rem; color:var(--bark); margin-bottom:22px; font-family:'Bricolage Grotesque'; font-weight:700;}
+  .quiz-options{display:flex; flex-direction:column; gap:10px;}
+  .quiz-option-btn{
+    text-align:left; background:var(--cream-2); border:1px solid var(--line); border-radius:12px;
+    padding:14px 18px; font-size:0.95rem; color:var(--ink); cursor:pointer; font-family:'Inter';
+    transition:border-color .2s, background .2s;
+  }
+  .quiz-option-btn:hover{border-color:var(--terracotta); background:rgba(195,91,40,0.06);}
+  .quiz-result-badge{
+    display:inline-block; font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--terracotta); background:rgba(195,91,40,0.1);
+    padding:5px 12px; border-radius:100px; margin-bottom:14px;
+  }
+  .quiz-result-visual{
+    height:160px; border-radius:14px; overflow:hidden; position:relative; margin-bottom:18px;
+  }
+  .quiz-result-name{font-size:1.4rem; color:var(--bark); margin-bottom:8px; font-family:'Bricolage Grotesque'; font-weight:700;}
+  .quiz-result-blurb{color:rgba(43,33,26,0.68); font-size:0.95rem; margin-bottom:22px;}
+  .quiz-result-actions{display:flex; gap:10px; flex-wrap:wrap;}
+  .quiz-restart-link{
+    display:inline-block; margin-top:18px; font-size:0.85rem; color:rgba(43,33,26,0.5);
+    text-decoration:underline; cursor:pointer; background:none; border:none; font-family:'Inter';
+  }
+
   /* ---------- RATE YOUR EXPERIENCE ---------- */
   .rating-section{padding:70px 0;}
   .rating-summary{
@@ -810,6 +867,13 @@
 </head>
 <body>
 
+<div class="urgency-banner" id="urgencyBanner">
+  <div class="urgency-banner-inner">
+    <span id="urgencyBannerText"></span>
+    <button type="button" class="urgency-banner-close" onclick="closeUrgencyBanner()" aria-label="Dismiss">&times;</button>
+  </div>
+</div>
+
 <header>
   <nav>
     <a href="#top" class="brand">
@@ -894,6 +958,19 @@
     <div class="trust-item"><strong>24/7</strong><span>online &amp; mobile support</span></div>
   </div>
 </div>
+
+<section class="quiz-teaser">
+  <div class="wrap">
+    <div class="quiz-teaser-card">
+      <div>
+        <div class="eyebrow" style="color:var(--terracotta); margin-bottom:10px;">Not sure where to start?</div>
+        <h3>Find your perfect Tuwai adventure in 30 seconds.</h3>
+        <p>Answer a few quick questions and we'll match you with the right trip.</p>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="openQuiz()">Take the quiz</button>
+    </div>
+  </div>
+</section>
 
 <section class="roll-section">
   <div class="wrap">
@@ -1358,6 +1435,15 @@
   </div>
 </div>
 
+<div class="gallery-modal" id="quizModal" role="dialog" aria-modal="true" aria-label="Plan my adventure quiz">
+  <div class="gallery-modal-backdrop" onclick="closeQuiz()"></div>
+  <div class="gallery-modal-panel quiz-modal-panel">
+    <button type="button" class="gallery-close" onclick="closeQuiz()" aria-label="Close quiz">&times;</button>
+    <div class="quiz-progress" id="quizProgress"></div>
+    <div id="quizBody"><!-- filled by script --></div>
+  </div>
+</div>
+
 <script>
   // ============================================================
   // TESTIMONIALS — these defaults are used until Jane saves her own
@@ -1774,6 +1860,14 @@
     }
   }
 
+  function closeUrgencyBanner(){
+    const banner = document.getElementById('urgencyBanner');
+    if(banner){
+      banner.classList.remove('is-visible');
+      sessionStorage.setItem('tuwaiBannerDismissed', document.getElementById('urgencyBannerText').textContent);
+    }
+  }
+
   function openAboutModal(){
     document.getElementById('aboutModal').classList.add('is-open');
     document.body.style.overflow = 'hidden';
@@ -1781,6 +1875,137 @@
   function closeAboutModal(){
     document.getElementById('aboutModal').classList.remove('is-open');
     document.body.style.overflow = '';
+  }
+
+  // ============================================================
+  // PLAN MY ADVENTURE QUIZ
+  // ============================================================
+  const QUIZ_QUESTIONS = [
+    { id: 'terrain', text: "Beach or bush?", options: [
+      { label: "Beach — turquoise water and slow mornings", value: "beach" },
+      { label: "Bush — wide open plains and wildlife", value: "bush" }
+    ]},
+    { id: 'group', text: "Who's coming with you?", options: [
+      { label: "Just me, or me and a partner", value: "intimate" },
+      { label: "Friends or family", value: "group" },
+      { label: "My work team", value: "corporate" }
+    ]},
+    { id: 'pace', text: "Chill or thrill?", options: [
+      { label: "Chill — I want to relax", value: "chill" },
+      { label: "Thrill — I want adventure", value: "thrill" }
+    ]},
+    { id: 'time', text: "This weekend, or a proper trip?", options: [
+      { label: "Just the weekend", value: "weekend" },
+      { label: "A few days away", value: "longer" }
+    ]}
+  ];
+
+  let quizStep = 0;
+  let quizAnswers = {};
+
+  function openQuiz(){
+    quizStep = 0;
+    quizAnswers = {};
+    document.getElementById('quizModal').classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    renderQuizStep();
+  }
+  function closeQuiz(){
+    document.getElementById('quizModal').classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+  function restartQuiz(){
+    quizStep = 0;
+    quizAnswers = {};
+    renderQuizStep();
+  }
+
+  function renderQuizProgress(){
+    const total = QUIZ_QUESTIONS.length;
+    const progressEl = document.getElementById('quizProgress');
+    let dots = '';
+    for(let i = 0; i < total; i++){
+      dots += `<div class="quiz-progress-dot ${i < quizStep ? 'is-done' : ''}"></div>`;
+    }
+    progressEl.innerHTML = dots;
+  }
+
+  function renderQuizStep(){
+    renderQuizProgress();
+    const body = document.getElementById('quizBody');
+    if(quizStep >= QUIZ_QUESTIONS.length){
+      renderQuizResult();
+      return;
+    }
+    const q = QUIZ_QUESTIONS[quizStep];
+    body.innerHTML = `
+      <div class="quiz-question-eyebrow">Question ${quizStep + 1} of ${QUIZ_QUESTIONS.length}</div>
+      <div class="quiz-question-text">${q.text}</div>
+      <div class="quiz-options">
+        ${q.options.map(function(opt){
+          return `<button type="button" class="quiz-option-btn" onclick="answerQuiz('${q.id}', '${opt.value}')">${opt.label}</button>`;
+        }).join('')}
+      </div>`;
+  }
+
+  function answerQuiz(questionId, value){
+    quizAnswers[questionId] = value;
+    quizStep++;
+    renderQuizStep();
+  }
+
+  function getQuizRecommendation(answers){
+    // Corporate groups always go to Team Building Packages, regardless of other answers.
+    if(answers.group === 'corporate'){
+      return { kind: 'nontour', index: 2 };
+    }
+    // A weekend-length trip points to a Short Staycation.
+    if(answers.time === 'weekend'){
+      return { kind: 'nontour', index: 0 };
+    }
+    if(answers.terrain === 'beach'){
+      return answers.pace === 'thrill' ? { kind: 'tour', index: 13 } : { kind: 'tour', index: 2 };
+    }
+    // bush
+    return answers.pace === 'thrill' ? { kind: 'tour', index: 3 } : { kind: 'tour', index: 1 };
+  }
+
+  function renderQuizResult(){
+    const rec = getQuizRecommendation(quizAnswers);
+    const body = document.getElementById('quizBody');
+    document.getElementById('quizProgress').innerHTML = '';
+
+    let name, blurb, sceneHtml, ctaText, openAction;
+    if(rec.kind === 'tour'){
+      const pkg = PACKAGES[rec.index];
+      name = pkg.name;
+      blurb = pkg.blurb;
+      sceneHtml = photoOrScene(pkg, 0, 0);
+      ctaText = "See the gallery";
+      openAction = `closeQuiz(); openGallery(); setTimeout(function(){ openAlbum(${rec.index}); }, 50);`;
+    } else {
+      const gal = NONTOUR_GALLERIES[rec.index];
+      name = gal.name;
+      blurb = "A great fit based on your answers.";
+      sceneHtml = photoOrScene(gal, 0, 0);
+      ctaText = "See the gallery";
+      openAction = `closeQuiz(); openNonTourGallery(${rec.index});`;
+    }
+
+    const waText = encodeURIComponent("Hi Tuwai Adventures, I took the quiz and I'm interested in: " + name);
+    const waHref = (document.getElementById('waSectionLink') ? document.getElementById('waSectionLink').href.split('?')[0] : "https://wa.me/254116560690") + '?text=' + waText;
+
+    body.innerHTML = `
+      <div class="quiz-result-badge">Your match</div>
+      <div class="quiz-result-visual">${sceneHtml}</div>
+      <div class="quiz-result-name">${name}</div>
+      <div class="quiz-result-blurb">${blurb}</div>
+      <div class="quiz-result-actions">
+        <a href="${waHref}" class="btn btn-primary wa-track-click" target="_blank" rel="noopener">Book on WhatsApp</a>
+        <button type="button" class="btn btn-ghost-dark" onclick="${openAction}">${ctaText}</button>
+      </div>
+      <button type="button" class="quiz-restart-link" onclick="restartQuiz()">Start over</button>
+    `;
   }
 
   document.addEventListener('keydown', function(e){
@@ -2294,6 +2519,23 @@
       if(data.timeOnPage) POPUP_MESSAGES.timeOnPage = data.timeOnPage;
     }).catch(function(err){
       console.warn('Could not load saved popup messages, using built-in defaults.', err);
+    });
+
+    // Seasonal urgency banner — hidden unless Jane has enabled it with a
+    // message. Dismissing it only hides that specific message for the
+    // session; a new/changed message will show again.
+    db.collection('content').doc('banner').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.enabled && data.message){
+        const dismissed = sessionStorage.getItem('tuwaiBannerDismissed');
+        if(dismissed !== data.message){
+          document.getElementById('urgencyBannerText').textContent = data.message;
+          document.getElementById('urgencyBanner').classList.add('is-visible');
+        }
+      }
+    }).catch(function(err){
+      console.warn('Could not load urgency banner, leaving it hidden.', err);
     });
 
     // Social links — Instagram is shown by default; TikTok only appears
