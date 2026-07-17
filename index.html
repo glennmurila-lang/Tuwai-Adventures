@@ -447,6 +447,8 @@
     font-family:'IBM Plex Mono'; font-size:0.68rem; letter-spacing:0.04em;
     padding:5px 10px; border-radius:100px; background:var(--cream-2); color:var(--ink); opacity:0.7;
   }
+  button.tag{border:none; cursor:pointer; opacity:1; transition:background .2s, color .2s;}
+  button.tag:hover{background:var(--terracotta); color:var(--cream);}
   .btn-ghost-dark{
     display:inline-flex; align-items:center; gap:8px; background:transparent;
     color:var(--bark); border:1px solid var(--line); padding:12px 22px;
@@ -983,7 +985,6 @@
         <button class="nav-dropdown-trigger" aria-haspopup="true">Non-Tour Adventures <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="nav-dropdown-menu">
           <a href="#staycations">Short Staycation</a>
-          <a href="#hotels">Packages</a>
           <a href="#corporate">Team Building Packages</a>
         </div>
       </div>
@@ -998,7 +999,6 @@
     <a href="#" onclick="openAboutModal(); closeMobileMenu(); return false;">About</a>
     <a href="#tours" onclick="closeMobileMenu()">Tours &amp; Safaris</a>
     <a href="#staycations" onclick="closeMobileMenu()">Short Staycation</a>
-    <a href="#hotels" onclick="closeMobileMenu()">Packages</a>
     <a href="#corporate" onclick="closeMobileMenu()">Team Building Packages</a>
     <a href="#process" onclick="closeMobileMenu()">How it works</a>
     <a href="#contact" onclick="closeMobileMenu()">Contact Us</a>
@@ -1164,12 +1164,13 @@
     <div class="services-grid-v2">
       <div class="service-feature reveal" id="tours">
         <h3>Tours &amp; Safaris</h3>
-        <p>Curated game drives, coastal escapes and cultural routes across Kenya — paced for first-timers and repeat travellers alike, with a local guide who knows the difference.</p>
+        <p>Curated game drives, coastal escapes and cultural routes across Kenya — paced for first-timers and repeat travellers alike.</p>
         <div class="tag-row">
           <span class="tag">Maasai Mara</span>
           <span class="tag">Amboseli</span>
           <span class="tag">Diani Coast</span>
           <span class="tag">Tsavo</span>
+          <button type="button" class="tag" onclick="openNonTourGallery(1)">Packages</button>
           <span class="tag">+12 more in the gallery</span>
         </div>
         <div class="tour-card-btns" style="margin-top:22px;">
@@ -1192,17 +1193,6 @@
             <p>Weekend-length resets close to home — for residents who want the feeling of travel without the flight. Booked fast, priced for a regular weekend.</p>
             <div class="tag-row"><span class="tag">Naivasha</span><span class="tag">Nanyuki</span><span class="tag">Weekend deals</span></div>
             <button type="button" class="sd-gallery-link" onclick="openNonTourGallery(0)">Browse gallery (8 photos) &rarr;</button>
-          </div>
-        </details>
-        <details class="sd-item" id="hotels">
-          <summary>
-            <span>Packages</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="chev"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </summary>
-          <div class="sd-panel">
-            <p>Straightforward hotel reservations across Kenya — vetted properties, resident and visitor rates, and a booking sorted before you arrive.</p>
-            <div class="tag-row"><span class="tag">City hotels</span><span class="tag">Resort stays</span><span class="tag">Best rate match</span></div>
-            <button type="button" class="sd-gallery-link" onclick="openNonTourGallery(1)">Browse gallery (8 photos) &rarr;</button>
           </div>
         </details>
         <details class="sd-item" id="corporate">
@@ -1390,7 +1380,6 @@
           <h5>Experiences</h5>
           <a href="#tours">Tours &amp; Safaris</a>
           <a href="#staycations">Short Staycation</a>
-          <a href="#hotels">Packages</a>
           <a href="#corporate">Team Building Packages</a>
         </div>
         <div>
