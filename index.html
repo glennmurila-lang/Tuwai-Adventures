@@ -523,7 +523,7 @@
     .testi-track{animation:none;}
   }
 
-  /* ---------- PLAN MY ADVENTURE QUIZ ---------- */
+  /* ---------- PLAN MY ADVENTURE TEASER ---------- */
   .quiz-teaser{padding:0 0 10px;}
   .quiz-teaser-card{
     background:linear-gradient(120deg, rgba(195,91,40,0.08), rgba(217,184,108,0.1));
@@ -533,35 +533,80 @@
   }
   .quiz-teaser-card h3{font-size:1.3rem; color:var(--bark); margin-bottom:6px;}
   .quiz-teaser-card p{color:rgba(43,33,26,0.65); font-size:0.92rem;}
-  .quiz-modal-panel{max-width:520px;}
-  .quiz-progress{display:flex; gap:6px; margin-bottom:26px; padding-right:36px;}
-  .quiz-progress-dot{
-    flex:1; height:5px; border-radius:100px; background:var(--cream-2);
+
+  /* ---------- TUWAI CHAT WIDGET ---------- */
+  .chat-toggle-btn{
+    position:fixed; bottom:24px; right:24px; z-index:95;
+    width:58px; height:58px; border-radius:50%; background:var(--terracotta);
+    border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 10px 28px rgba(195,91,40,0.4); transition:transform .2s;
   }
-  .quiz-progress-dot.is-done{background:var(--terracotta);}
-  .quiz-question-eyebrow{font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--terracotta); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:10px;}
-  .quiz-question-text{font-size:1.25rem; color:var(--bark); margin-bottom:22px; font-family:'Bricolage Grotesque'; font-weight:700;}
-  .quiz-options{display:flex; flex-direction:column; gap:10px;}
-  .quiz-option-btn{
-    text-align:left; background:var(--cream-2); border:1px solid var(--line); border-radius:12px;
-    padding:14px 18px; font-size:0.95rem; color:var(--ink); cursor:pointer; font-family:'Inter';
+  .chat-toggle-btn:hover{transform:scale(1.06);}
+  .chat-toggle-btn.is-open svg{transform:rotate(90deg); opacity:0;}
+  .chat-toggle-dot{
+    position:absolute; top:4px; right:4px; width:12px; height:12px; border-radius:50%;
+    background:#3ddc6b; border:2px solid var(--cream);
+  }
+  .chat-widget-panel{
+    position:fixed; bottom:94px; right:24px; z-index:94;
+    width:340px; max-width:calc(100vw - 32px); height:480px; max-height:calc(100vh - 130px);
+    background:var(--cream); border-radius:18px; overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,0.25);
+    display:flex; flex-direction:column;
+    transform:translateY(16px) scale(0.97); opacity:0; pointer-events:none;
+    transition:transform .25s ease, opacity .25s ease;
+  }
+  .chat-widget-panel.is-open{transform:translateY(0) scale(1); opacity:1; pointer-events:auto;}
+  .chat-widget-header{
+    background:var(--bark); color:var(--cream); padding:16px 16px; display:flex; align-items:center; gap:12px; flex-shrink:0;
+  }
+  .chat-widget-avatar{
+    width:38px; height:38px; border-radius:50%; background:var(--terracotta);
+    display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;
+  }
+  .chat-widget-who{flex:1;}
+  .chat-widget-name{font-family:'Bricolage Grotesque'; font-weight:700; font-size:0.95rem;}
+  .chat-widget-status{font-size:0.72rem; color:rgba(247,241,230,0.6); display:flex; align-items:center; gap:5px;}
+  .chat-online-dot{width:6px; height:6px; border-radius:50%; background:#3ddc6b; display:inline-block;}
+  .chat-widget-close{background:none; border:none; color:rgba(247,241,230,0.7); font-size:1.3rem; cursor:pointer; line-height:1;}
+  .chat-widget-close:hover{color:var(--cream);}
+  .chat-widget-messages{
+    flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px;
+    background:var(--cream);
+  }
+  .chat-bubble{
+    max-width:85%; padding:10px 14px; border-radius:14px; font-size:0.88rem; line-height:1.5;
+  }
+  .chat-bubble-bot{
+    background:var(--cream-2); color:var(--ink); align-self:flex-start; border-bottom-left-radius:4px;
+  }
+  .chat-bubble-user{
+    background:var(--terracotta); color:#fff; align-self:flex-end; border-bottom-right-radius:4px;
+  }
+  .chat-typing{display:flex; gap:4px; align-items:center; padding:14px;}
+  .chat-typing span{
+    width:6px; height:6px; border-radius:50%; background:rgba(43,33,26,0.35);
+    animation:chatTypingBounce 1.2s infinite ease-in-out;
+  }
+  .chat-typing span:nth-child(2){animation-delay:0.15s;}
+  .chat-typing span:nth-child(3){animation-delay:0.3s;}
+  @keyframes chatTypingBounce{
+    0%, 60%, 100%{transform:translateY(0); opacity:0.5;}
+    30%{transform:translateY(-4px); opacity:1;}
+  }
+  .chat-quick-replies{display:flex; flex-direction:column; gap:8px; align-self:stretch;}
+  .chat-reply-btn{
+    background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 14px;
+    font-size:0.85rem; color:var(--ink); cursor:pointer; text-align:left; font-family:'Inter';
     transition:border-color .2s, background .2s;
   }
-  .quiz-option-btn:hover{border-color:var(--terracotta); background:rgba(195,91,40,0.06);}
-  .quiz-result-badge{
-    display:inline-block; font-family:'IBM Plex Mono'; font-size:0.7rem; letter-spacing:0.06em;
-    text-transform:uppercase; color:var(--terracotta); background:rgba(195,91,40,0.1);
-    padding:5px 12px; border-radius:100px; margin-bottom:14px;
+  .chat-reply-btn:hover{border-color:var(--terracotta); background:rgba(195,91,40,0.06);}
+  .chat-result-visual{
+    height:110px; border-radius:10px; overflow:hidden; position:relative; margin:8px 0;
   }
-  .quiz-result-visual{
-    height:160px; border-radius:14px; overflow:hidden; position:relative; margin-bottom:18px;
-  }
-  .quiz-result-name{font-size:1.4rem; color:var(--bark); margin-bottom:8px; font-family:'Bricolage Grotesque'; font-weight:700;}
-  .quiz-result-blurb{color:rgba(43,33,26,0.68); font-size:0.95rem; margin-bottom:22px;}
-  .quiz-result-actions{display:flex; gap:10px; flex-wrap:wrap;}
-  .quiz-restart-link{
-    display:inline-block; margin-top:18px; font-size:0.85rem; color:rgba(43,33,26,0.5);
-    text-decoration:underline; cursor:pointer; background:none; border:none; font-family:'Inter';
+  @media (max-width:480px){
+    .chat-widget-panel{right:16px; bottom:88px; width:calc(100vw - 32px);}
+    .chat-toggle-btn{right:16px; bottom:16px;}
   }
 
   /* ---------- RATE YOUR EXPERIENCE ---------- */
@@ -810,7 +855,7 @@
 
   /* ---------- ENGAGEMENT POPUP ---------- */
   .engage-popup{
-    position:fixed; bottom:20px; right:20px; z-index:90;
+    position:fixed; bottom:96px; right:20px; z-index:90;
     background:var(--bark); color:var(--cream); border-radius:16px;
     padding:22px 22px 20px; max-width:300px; width:calc(100% - 40px);
     box-shadow:0 20px 50px rgba(0,0,0,0.3);
@@ -828,7 +873,7 @@
   }
   .engage-popup .btn{width:100%; justify-content:center; font-size:0.88rem; padding:11px 18px;}
   @media (max-width:480px){
-    .engage-popup{left:20px; right:20px; bottom:16px; max-width:none;}
+    .engage-popup{left:20px; right:20px; bottom:88px; max-width:none;}
   }
 
   /* ---------- ABOUT MODAL ---------- */
@@ -967,7 +1012,7 @@
         <h3>Find your perfect Tuwai adventure in 30 seconds.</h3>
         <p>Answer a few quick questions and we'll match you with the right trip.</p>
       </div>
-      <button type="button" class="btn btn-primary" onclick="openQuiz()">Take the quiz</button>
+      <button type="button" class="btn btn-primary" onclick="toggleChatWidget()">Chat with Tuwai</button>
     </div>
   </div>
 </section>
@@ -1435,13 +1480,21 @@
   </div>
 </div>
 
-<div class="gallery-modal" id="quizModal" role="dialog" aria-modal="true" aria-label="Plan my adventure quiz">
-  <div class="gallery-modal-backdrop" onclick="closeQuiz()"></div>
-  <div class="gallery-modal-panel quiz-modal-panel">
-    <button type="button" class="gallery-close" onclick="closeQuiz()" aria-label="Close quiz">&times;</button>
-    <div class="quiz-progress" id="quizProgress"></div>
-    <div id="quizBody"><!-- filled by script --></div>
+<button type="button" class="chat-toggle-btn" id="chatToggleBtn" onclick="toggleChatWidget()" aria-label="Chat with Tuwai">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke="#f7f1e6" stroke-width="1.8" stroke-linejoin="round"/></svg>
+  <span class="chat-toggle-dot"></span>
+</button>
+
+<div class="chat-widget-panel" id="chatWidgetPanel">
+  <div class="chat-widget-header">
+    <div class="chat-widget-avatar">🐾</div>
+    <div class="chat-widget-who">
+      <div class="chat-widget-name">Tuwai</div>
+      <div class="chat-widget-status"><span class="chat-online-dot"></span> Online &middot; Tuwai Adventures</div>
+    </div>
+    <button type="button" class="chat-widget-close" onclick="toggleChatWidget()" aria-label="Close chat">&times;</button>
   </div>
+  <div class="chat-widget-messages" id="chatMessages"></div>
 </div>
 
 <script>
@@ -1878,134 +1931,224 @@
   }
 
   // ============================================================
-  // PLAN MY ADVENTURE QUIZ
+  // TUWAI CHAT WIDGET — a scripted assistant (not real AI): greets,
+  // asks a couple of quick questions per category, recommends a real
+  // package, then hands off to WhatsApp with the whole conversation
+  // summarized so the sales team has full context immediately.
   // ============================================================
-  const QUIZ_QUESTIONS = [
-    { id: 'terrain', text: "Beach or bush?", options: [
-      { label: "Beach — turquoise water and slow mornings", value: "beach" },
-      { label: "Bush — wide open plains and wildlife", value: "bush" }
-    ]},
-    { id: 'group', text: "Who's coming with you?", options: [
-      { label: "Just me, or me and a partner", value: "intimate" },
-      { label: "Friends or family", value: "group" },
-      { label: "My work team", value: "corporate" }
-    ]},
-    { id: 'pace', text: "Chill or thrill?", options: [
-      { label: "Chill — I want to relax", value: "chill" },
-      { label: "Thrill — I want adventure", value: "thrill" }
-    ]},
-    { id: 'time', text: "This weekend, or a proper trip?", options: [
-      { label: "Just the weekend", value: "weekend" },
-      { label: "A few days away", value: "longer" }
-    ]}
-  ];
-
-  let quizStep = 0;
-  let quizAnswers = {};
-
-  function openQuiz(){
-    quizStep = 0;
-    quizAnswers = {};
-    document.getElementById('quizModal').classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-    renderQuizStep();
-  }
-  function closeQuiz(){
-    document.getElementById('quizModal').classList.remove('is-open');
-    document.body.style.overflow = '';
-  }
-  function restartQuiz(){
-    quizStep = 0;
-    quizAnswers = {};
-    renderQuizStep();
-  }
-
-  function renderQuizProgress(){
-    const total = QUIZ_QUESTIONS.length;
-    const progressEl = document.getElementById('quizProgress');
-    let dots = '';
-    for(let i = 0; i < total; i++){
-      dots += `<div class="quiz-progress-dot ${i < quizStep ? 'is-done' : ''}"></div>`;
+  const CHAT_CATEGORIES = {
+    tours: {
+      label: "Tours & Safaris",
+      questions: [
+        { field: 'terrain', text: "Beach or bush?", options: [
+          { label: "Beach", value: "beach" },
+          { label: "Bush", value: "bush" }
+        ]},
+        { field: 'pace', text: "Chill or thrill?", options: [
+          { label: "Chill", value: "chill" },
+          { label: "Thrill", value: "thrill" }
+        ]}
+      ],
+      recommend: function(answers){
+        if(answers.terrain === 'beach'){
+          return { kind: 'tour', index: answers.pace === 'thrill' ? 13 : 2 };
+        }
+        return { kind: 'tour', index: answers.pace === 'thrill' ? 3 : 1 };
+      }
+    },
+    packages: {
+      label: "Packages",
+      questions: [
+        { field: 'length', text: "A weekend getaway, or a longer stay?", options: [
+          { label: "Weekend getaway", value: "weekend" },
+          { label: "Longer stay", value: "longer" }
+        ]},
+        { field: 'setting', text: "Countryside or coastal?", options: [
+          { label: "Countryside", value: "countryside" },
+          { label: "Coastal", value: "coastal" }
+        ]}
+      ],
+      recommend: function(){ return { kind: 'nontour', index: 1 }; }
+    },
+    teambuilding: {
+      label: "Team Building",
+      questions: [
+        { field: 'size', text: "Roughly how many people?", options: [
+          { label: "Small team (2–10)", value: "small" },
+          { label: "Large group (10+)", value: "large" }
+        ]},
+        { field: 'format', text: "Half-day, or a full retreat?", options: [
+          { label: "Half-day", value: "half" },
+          { label: "Full retreat", value: "full" }
+        ]}
+      ],
+      recommend: function(){ return { kind: 'nontour', index: 2 }; }
+    },
+    staycations: {
+      label: "Staycations",
+      questions: [
+        { field: 'who', text: "Solo/couple, or family and friends?", options: [
+          { label: "Solo or couple", value: "intimate" },
+          { label: "Family or friends", value: "group" }
+        ]},
+        { field: 'pace', text: "Relax, or something active?", options: [
+          { label: "Relax", value: "relax" },
+          { label: "Active", value: "active" }
+        ]}
+      ],
+      recommend: function(){ return { kind: 'nontour', index: 0 }; }
     }
-    progressEl.innerHTML = dots;
+  };
+
+  let chatOpen = false;
+  let chatStarted = false;
+  let chatCategory = null;
+  let chatQuestionIndex = 0;
+  let chatAnswers = {};
+  let chatTranscript = [];
+
+  function toggleChatWidget(){
+    const panel = document.getElementById('chatWidgetPanel');
+    chatOpen = !chatOpen;
+    panel.classList.toggle('is-open', chatOpen);
+    document.getElementById('chatToggleBtn').classList.toggle('is-open', chatOpen);
+    if(chatOpen && !chatStarted){
+      chatStarted = true;
+      startChatGreeting();
+    }
   }
 
-  function renderQuizStep(){
-    renderQuizProgress();
-    const body = document.getElementById('quizBody');
-    if(quizStep >= QUIZ_QUESTIONS.length){
-      renderQuizResult();
+  function chatScrollToBottom(){
+    const msgs = document.getElementById('chatMessages');
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addBotMessage(html, callback){
+    const msgs = document.getElementById('chatMessages');
+    const typing = document.createElement('div');
+    typing.className = 'chat-bubble chat-bubble-bot chat-typing';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    msgs.appendChild(typing);
+    chatScrollToBottom();
+    setTimeout(function(){
+      typing.remove();
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble chat-bubble-bot';
+      bubble.innerHTML = html;
+      msgs.appendChild(bubble);
+      chatScrollToBottom();
+      if(callback) callback();
+    }, 550);
+  }
+
+  function addUserMessage(text){
+    const msgs = document.getElementById('chatMessages');
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble chat-bubble-user';
+    bubble.textContent = text;
+    msgs.appendChild(bubble);
+    chatTranscript.push(text);
+    chatScrollToBottom();
+  }
+
+  function showQuickReplies(options, onSelect){
+    const msgs = document.getElementById('chatMessages');
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-quick-replies';
+    wrap.id = 'chatActiveReplies';
+    wrap.innerHTML = options.map(function(opt, i){
+      return `<button type="button" class="chat-reply-btn" data-i="${i}">${opt.label}</button>`;
+    }).join('');
+    msgs.appendChild(wrap);
+    chatScrollToBottom();
+    wrap.querySelectorAll('.chat-reply-btn').forEach(function(btn, i){
+      btn.addEventListener('click', function(){
+        wrap.remove();
+        addUserMessage(options[i].label);
+        onSelect(options[i].value, options[i].label);
+      });
+    });
+  }
+
+  function startChatGreeting(){
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning!" : (hour < 18 ? "Good afternoon!" : "Good evening!");
+    addBotMessage(`${greeting} I'm Tuwai 🐾 How may I help you today?`, function(){
+      showQuickReplies([
+        { label: "Tours & Safaris", value: "tours" },
+        { label: "Packages", value: "packages" },
+        { label: "Team Building", value: "teambuilding" },
+        { label: "Staycations", value: "staycations" }
+      ], selectChatCategory);
+    });
+  }
+
+  function selectChatCategory(value){
+    chatCategory = value;
+    chatQuestionIndex = 0;
+    chatAnswers = {};
+    askNextChatQuestion();
+  }
+
+  function askNextChatQuestion(){
+    const cat = CHAT_CATEGORIES[chatCategory];
+    if(chatQuestionIndex >= cat.questions.length){
+      showChatResult();
       return;
     }
-    const q = QUIZ_QUESTIONS[quizStep];
-    body.innerHTML = `
-      <div class="quiz-question-eyebrow">Question ${quizStep + 1} of ${QUIZ_QUESTIONS.length}</div>
-      <div class="quiz-question-text">${q.text}</div>
-      <div class="quiz-options">
-        ${q.options.map(function(opt){
-          return `<button type="button" class="quiz-option-btn" onclick="answerQuiz('${q.id}', '${opt.value}')">${opt.label}</button>`;
-        }).join('')}
-      </div>`;
+    const q = cat.questions[chatQuestionIndex];
+    addBotMessage(q.text, function(){
+      showQuickReplies(q.options, function(value){
+        chatAnswers[q.field] = value;
+        chatQuestionIndex++;
+        askNextChatQuestion();
+      });
+    });
   }
 
-  function answerQuiz(questionId, value){
-    quizAnswers[questionId] = value;
-    quizStep++;
-    renderQuizStep();
-  }
-
-  function getQuizRecommendation(answers){
-    // Corporate groups always go to Team Building Packages, regardless of other answers.
-    if(answers.group === 'corporate'){
-      return { kind: 'nontour', index: 2 };
-    }
-    // A weekend-length trip points to a Short Staycation.
-    if(answers.time === 'weekend'){
-      return { kind: 'nontour', index: 0 };
-    }
-    if(answers.terrain === 'beach'){
-      return answers.pace === 'thrill' ? { kind: 'tour', index: 13 } : { kind: 'tour', index: 2 };
-    }
-    // bush
-    return answers.pace === 'thrill' ? { kind: 'tour', index: 3 } : { kind: 'tour', index: 1 };
-  }
-
-  function renderQuizResult(){
-    const rec = getQuizRecommendation(quizAnswers);
-    const body = document.getElementById('quizBody');
-    document.getElementById('quizProgress').innerHTML = '';
-
-    let name, blurb, sceneHtml, ctaText, openAction;
+  function showChatResult(){
+    const cat = CHAT_CATEGORIES[chatCategory];
+    const rec = cat.recommend(chatAnswers);
+    let name, blurb, sceneHtml, openAction;
     if(rec.kind === 'tour'){
       const pkg = PACKAGES[rec.index];
-      name = pkg.name;
-      blurb = pkg.blurb;
+      name = pkg.name; blurb = pkg.blurb;
       sceneHtml = photoOrScene(pkg, 0, 0);
-      ctaText = "See the gallery";
-      openAction = `closeQuiz(); openGallery(); setTimeout(function(){ openAlbum(${rec.index}); }, 50);`;
+      openAction = `toggleChatWidget(); openGallery(); setTimeout(function(){ openAlbum(${rec.index}); }, 50);`;
     } else {
       const gal = NONTOUR_GALLERIES[rec.index];
-      name = gal.name;
-      blurb = "A great fit based on your answers.";
+      name = gal.name; blurb = "A great fit based on what you've told me.";
       sceneHtml = photoOrScene(gal, 0, 0);
-      ctaText = "See the gallery";
-      openAction = `closeQuiz(); openNonTourGallery(${rec.index});`;
+      openAction = `toggleChatWidget(); openNonTourGallery(${rec.index});`;
     }
 
-    const waText = encodeURIComponent("Hi Tuwai Adventures, I took the quiz and I'm interested in: " + name);
-    const waHref = (document.getElementById('waSectionLink') ? document.getElementById('waSectionLink').href.split('?')[0] : "https://wa.me/254116560690") + '?text=' + waText;
+    addBotMessage(`Based on that, I'd recommend: <strong>${name}</strong><div class="chat-result-visual">${sceneHtml}</div>${blurb}`, function(){
+      addBotMessage(`Let's connect you to our sales team — they'll have everything we just talked about.`, function(){
+        const summary = "Hi Tuwai Adventures! I was chatting with Tuwai about " + cat.label +
+          ". My answers: " + chatTranscript.join(', ') + ". Recommended: " + name + ". Let's talk!";
+        const waText = encodeURIComponent(summary);
+        const waHref = (document.getElementById('waSectionLink') ? document.getElementById('waSectionLink').href.split('?')[0] : "https://wa.me/254116560690") + '?text=' + waText;
+        const msgs = document.getElementById('chatMessages');
+        const wrap = document.createElement('div');
+        wrap.className = 'chat-quick-replies';
+        wrap.innerHTML = `
+          <a href="${waHref}" class="btn btn-primary wa-track-click" target="_blank" rel="noopener" style="width:100%; justify-content:center;">Continue on WhatsApp</a>
+          <button type="button" class="chat-reply-btn" onclick="${openAction}">See the gallery</button>
+          <button type="button" class="chat-reply-btn" onclick="restartChatWidget()">Start over</button>
+        `;
+        msgs.appendChild(wrap);
+        chatScrollToBottom();
+      });
+    });
+  }
 
-    body.innerHTML = `
-      <div class="quiz-result-badge">Your match</div>
-      <div class="quiz-result-visual">${sceneHtml}</div>
-      <div class="quiz-result-name">${name}</div>
-      <div class="quiz-result-blurb">${blurb}</div>
-      <div class="quiz-result-actions">
-        <a href="${waHref}" class="btn btn-primary wa-track-click" target="_blank" rel="noopener">Book on WhatsApp</a>
-        <button type="button" class="btn btn-ghost-dark" onclick="${openAction}">${ctaText}</button>
-      </div>
-      <button type="button" class="quiz-restart-link" onclick="restartQuiz()">Start over</button>
-    `;
+  function restartChatWidget(){
+    document.getElementById('chatMessages').innerHTML = '';
+    chatCategory = null;
+    chatQuestionIndex = 0;
+    chatAnswers = {};
+    chatTranscript = [];
+    startChatGreeting();
   }
 
   document.addEventListener('keydown', function(e){
@@ -2022,6 +2165,8 @@
       if(e.key === 'ArrowRight') nonTourNext();
     } else if(aboutModal.classList.contains('is-open')){
       if(e.key === 'Escape') closeAboutModal();
+    } else if(chatOpen && e.key === 'Escape'){
+      toggleChatWidget();
     }
   });
 
