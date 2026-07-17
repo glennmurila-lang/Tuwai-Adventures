@@ -228,6 +228,25 @@
       </div>
     </div>
 
+    <h2 class="section-title">Seasonal banner</h2>
+    <p class="section-sub">An optional bar across the very top of the site — good for urgency messages like limited slots or seasonal offers. Turn it off any time; the message stays saved for next time you need it.</p>
+    <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
+      <div class="slot-body">
+        <div class="field">
+          <label for="bannerMessageInput">Banner message</label>
+          <input type="text" id="bannerMessageInput" placeholder="e.g. Only 3 slots left for the December migration season">
+        </div>
+        <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; margin-bottom:12px; cursor:pointer;">
+          <input type="checkbox" id="bannerEnabledInput" style="width:auto;">
+          Show this banner on the site
+        </label>
+        <div class="slot-upload-row">
+          <button class="slot-upload-btn" onclick="saveBanner()">Save banner</button>
+        </div>
+        <div class="slot-status" id="status-banner"></div>
+      </div>
+    </div>
+
     <h2 class="section-title">Engagement popups</h2>
     <p class="section-sub">A friendly nudge that shows once per visit — whichever of these three happens first: someone's about to close the tab, someone comes back after clicking "Book on WhatsApp," or someone's been browsing a while. Each has a WhatsApp button attached.</p>
     <div class="slot-card pkg-text-card" style="margin-bottom:24px;">
@@ -484,6 +503,7 @@
     loadContactInfo();
     loadSocialLinks();
     loadPopupMessages();
+    loadBanner();
   }
 
   const DEFAULT_CONTACT_INFO = {
@@ -562,6 +582,40 @@
     statusEl.className = 'slot-status working';
     db.collection('content').doc('popups').set({
       exitIntent: exitIntent, whatsappReturn: whatsappReturn, timeOnPage: timeOnPage,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).then(function(){
+      statusEl.textContent = 'Saved \u2713';
+      statusEl.className = 'slot-status ok';
+    }).catch(function(err){
+      statusEl.textContent = 'Failed: ' + err.message;
+      statusEl.className = 'slot-status err';
+    });
+  }
+
+  function loadBanner(){
+    db.collection('content').doc('banner').get().then(function(doc){
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.message) document.getElementById('bannerMessageInput').value = data.message;
+      document.getElementById('bannerEnabledInput').checked = !!data.enabled;
+    }).catch(function(err){
+      console.error('Could not load banner:', err);
+    });
+  }
+
+  function saveBanner(){
+    const message = document.getElementById('bannerMessageInput').value.trim();
+    const enabled = document.getElementById('bannerEnabledInput').checked;
+    const statusEl = document.getElementById('status-banner');
+    if(enabled && !message){
+      statusEl.textContent = 'Add a message before turning the banner on';
+      statusEl.className = 'slot-status err';
+      return;
+    }
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+    db.collection('content').doc('banner').set({
+      message: message, enabled: enabled,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).then(function(){
       statusEl.textContent = 'Saved \u2713';
