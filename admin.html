@@ -383,8 +383,35 @@
     <div id="packageGroups"><!-- filled by script --></div>
 
     <h2 class="section-title">Non-Tour Adventures gallery photos</h2>
-    <p class="section-sub">Click a category to open it and upload its 8 photos — Short Staycation, Packages, and Team Building Packages. Note: "Packages" now opens from the Tours &amp; Safaris card on the site (as its own tag), not from the Non-Tour Adventures card.</p>
+    <p class="section-sub">Click a category to open it and upload its 8 photos — Short Staycation and Team Building Packages. (Packages/offers are managed separately below, under "Package Offers".)</p>
     <div id="nonTourGroups"><!-- filled by script --></div>
+
+    <h2 class="section-title">Package Offers</h2>
+    <p class="section-sub">The offer cards shown when someone clicks "See current offers" on the Packages section of the site. Add as many as you like, edit them any time, or remove ones that are no longer running.</p>
+
+    <div class="slot-card pkg-text-card" style="margin-bottom:20px;">
+      <div class="slot-body">
+        <div class="slot-label">Add a new package offer</div>
+        <div class="field">
+          <label for="newOfferName">Offer name</label>
+          <input type="text" id="newOfferName" placeholder="e.g. Weekend Family Getaway">
+        </div>
+        <div class="field">
+          <label for="newOfferDesc">Description</label>
+          <textarea id="newOfferDesc" rows="3" placeholder="What's included, dates, price — whatever you want shown"></textarea>
+        </div>
+        <div class="field">
+          <label for="newOfferImage">Photo</label>
+          <input type="file" id="newOfferImage" accept="image/*">
+        </div>
+        <div class="slot-upload-row">
+          <button class="slot-upload-btn" onclick="addPackageOffer()">Add offer</button>
+        </div>
+        <div class="slot-status" id="status-new-offer"></div>
+      </div>
+    </div>
+
+    <div id="packageOffersList"><!-- filled by script --></div>
   </div>
 </div>
 
@@ -504,6 +531,7 @@
     loadSocialLinks();
     loadPopupMessages();
     loadBanner();
+    loadPackageOffersAdmin();
   }
 
   const DEFAULT_CONTACT_INFO = {
@@ -1187,13 +1215,16 @@
     document.getElementById('pkg-' + index).classList.toggle('open');
   }
 
-  // Same 3 categories/order as the main site's Non-Tour Adventures gallery,
-  // each with 8 photo slots.
+  // Same 3 categories/order as the main site's Non-Tour Adventures gallery.
+  // Index 1 ("Packages") is skipped here — it's now managed under
+  // "Package Offers" below instead of a fixed photo gallery.
   const NON_TOUR_CATEGORIES = ["Short Staycation", "Packages", "Team Building Packages"];
 
   function renderNonTourGroups(){
     const container = document.getElementById('nonTourGroups');
-    container.innerHTML = NON_TOUR_CATEGORIES.map((name, cIndex) => `
+    container.innerHTML = NON_TOUR_CATEGORIES.map((name, cIndex) => {
+      if(cIndex === 1) return ''; // Packages — see Package Offers section instead
+      return `
       <div class="package-group" id="nontour-group-${cIndex}">
         <h3 onclick="toggleNonTourGroup(${cIndex})">${name} <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></h3>
         <div class="package-photos">
@@ -1213,11 +1244,181 @@
             </div>`;
           }).join('')}
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   function toggleNonTourGroup(index){
     document.getElementById('nontour-group-' + index).classList.toggle('open');
+  }
+
+  // ============================================================
+  // PACKAGE OFFERS — full create/edit/delete for the cards shown
+  // under "Packages" on the site (Tours & Safaris card).
+  // ============================================================
+  let packageOffersCache = [];
+  let editingOfferId = null;
+
+  function loadPackageOffersAdmin(){
+    db.collection('packageOffers').orderBy('order', 'asc').get().then(function(snapshot){
+      packageOffersCache = snapshot.docs.map(function(doc){
+        return Object.assign({ id: doc.id }, doc.data());
+      });
+      renderPackageOffersList();
+    }).catch(function(err){
+      document.getElementById('packageOffersList').innerHTML =
+        '<div class="lead-empty">Could not load package offers: ' + err.message + '</div>';
+      console.error('Could not load package offers:', err);
+    });
+  }
+
+  function renderPackageOffersList(){
+    const listEl = document.getElementById('packageOffersList');
+    if(packageOffersCache.length === 0){
+      listEl.innerHTML = '<div class="lead-empty">No package offers yet — add one above.</div>';
+      return;
+    }
+    listEl.innerHTML = packageOffersCache.map(function(offer){
+      if(editingOfferId === offer.id){
+        return `
+          <div class="lead-card">
+            <div class="field">
+              <label>Offer name</label>
+              <input type="text" id="edit-offer-name-${offer.id}" value="${(offer.name || '').replace(/"/g,'&quot;')}">
+            </div>
+            <div class="field">
+              <label>Description</label>
+              <textarea id="edit-offer-desc-${offer.id}" rows="3">${offer.description || ''}</textarea>
+            </div>
+            <div class="field">
+              <label>Replace photo (optional)</label>
+              <input type="file" id="edit-offer-image-${offer.id}" accept="image/*">
+            </div>
+            <div class="slot-upload-row">
+              <button class="slot-upload-btn" onclick="savePackageOfferEdit('${offer.id}')">Save changes</button>
+              <button class="rating-action-btn" onclick="cancelPackageOfferEdit()">Cancel</button>
+            </div>
+            <div class="slot-status" id="status-edit-offer-${offer.id}"></div>
+          </div>`;
+      }
+      const thumb = offer.imageUrl
+        ? `<img src="${offer.imageUrl}" alt="" style="width:60px; height:60px; object-fit:cover; border-radius:8px; margin-right:12px;">`
+        : '';
+      return `
+        <div class="lead-card">
+          <div class="lead-top" style="align-items:center;">
+            <span class="lead-name" style="display:flex; align-items:center;">${thumb}${(offer.name || 'Package').replace(/</g,'&lt;')}</span>
+          </div>
+          <div class="lead-message">${(offer.description || '').replace(/</g,'&lt;')}</div>
+          <div class="rating-mod-row">
+            <button class="rating-action-btn" onclick="startPackageOfferEdit('${offer.id}')">Edit</button>
+            <button class="rating-action-btn rating-reject-btn" onclick="deletePackageOffer('${offer.id}')">Delete</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function startPackageOfferEdit(id){
+    editingOfferId = id;
+    renderPackageOffersList();
+  }
+  function cancelPackageOfferEdit(){
+    editingOfferId = null;
+    renderPackageOffersList();
+  }
+
+  function addPackageOffer(){
+    const name = document.getElementById('newOfferName').value.trim();
+    const description = document.getElementById('newOfferDesc').value.trim();
+    const fileInput = document.getElementById('newOfferImage');
+    const file = fileInput.files[0];
+    const statusEl = document.getElementById('status-new-offer');
+    if(!name){
+      statusEl.textContent = 'Give the offer a name first';
+      statusEl.className = 'slot-status err';
+      return;
+    }
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+
+    function saveDoc(imageUrl){
+      const order = packageOffersCache.length
+        ? Math.max.apply(null, packageOffersCache.map(function(o){ return o.order || 0; })) + 1
+        : 0;
+      db.collection('packageOffers').add({
+        name: name, description: description, imageUrl: imageUrl || '', order: order,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function(){
+        statusEl.textContent = 'Added \u2713';
+        statusEl.className = 'slot-status ok';
+        document.getElementById('newOfferName').value = '';
+        document.getElementById('newOfferDesc').value = '';
+        fileInput.value = '';
+        loadPackageOffersAdmin();
+      }).catch(function(err){
+        statusEl.textContent = 'Failed: ' + err.message;
+        statusEl.className = 'slot-status err';
+      });
+    }
+
+    if(file){
+      const ext = file.name.split('.').pop();
+      const path = 'packageOffers/' + Date.now() + '.' + ext;
+      const ref = storage.ref().child(path);
+      ref.put(file).then(function(){ return ref.getDownloadURL(); }).then(function(url){
+        saveDoc(url);
+      }).catch(function(err){
+        statusEl.textContent = 'Image upload failed: ' + err.message;
+        statusEl.className = 'slot-status err';
+      });
+    } else {
+      saveDoc(null);
+    }
+  }
+
+  function savePackageOfferEdit(id){
+    const name = document.getElementById('edit-offer-name-' + id).value.trim();
+    const description = document.getElementById('edit-offer-desc-' + id).value.trim();
+    const fileInput = document.getElementById('edit-offer-image-' + id);
+    const file = fileInput.files[0];
+    const statusEl = document.getElementById('status-edit-offer-' + id);
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'slot-status working';
+
+    function saveUpdate(imageUrl){
+      const updates = { name: name, description: description, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+      if(imageUrl) updates.imageUrl = imageUrl;
+      db.collection('packageOffers').doc(id).update(updates).then(function(){
+        editingOfferId = null;
+        loadPackageOffersAdmin();
+      }).catch(function(err){
+        statusEl.textContent = 'Failed: ' + err.message;
+        statusEl.className = 'slot-status err';
+      });
+    }
+
+    if(file){
+      const ext = file.name.split('.').pop();
+      const path = 'packageOffers/' + id + '_' + Date.now() + '.' + ext;
+      const ref = storage.ref().child(path);
+      ref.put(file).then(function(){ return ref.getDownloadURL(); }).then(function(url){
+        saveUpdate(url);
+      }).catch(function(err){
+        statusEl.textContent = 'Image upload failed: ' + err.message;
+        statusEl.className = 'slot-status err';
+      });
+    } else {
+      saveUpdate(null);
+    }
+  }
+
+  function deletePackageOffer(id){
+    if(!confirm('Delete this package offer? This cannot be undone.')) return;
+    db.collection('packageOffers').doc(id).delete().then(function(){
+      loadPackageOffersAdmin();
+    }).catch(function(err){
+      alert('Could not delete: ' + err.message);
+    });
   }
 
   // ---------- Load existing images from Firestore ----------
