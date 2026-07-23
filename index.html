@@ -1203,13 +1203,8 @@
         <div class="tour-subsection">
           <h4>Packages</h4>
           <p>Straightforward hotel reservations across Kenya — vetted properties, resident and visitor rates, and a booking sorted before you arrive.</p>
-          <div class="tag-row">
-            <span class="tag">City hotels</span>
-            <span class="tag">Resort stays</span>
-            <span class="tag">Best rate match</span>
-          </div>
           <div class="tour-card-btns">
-            <button type="button" class="btn btn-ghost-dark" onclick="openNonTourGallery(1)">Browse gallery (8 photos)</button>
+            <button type="button" class="btn btn-ghost-dark" onclick="openPackageOffers()">See current offers</button>
           </div>
         </div>
       </div>
@@ -1484,6 +1479,16 @@
       <p id="nonTourDesc"></p>
       <div class="gallery-thumbs" id="nonTourThumbs"><!-- filled by script --></div>
     </div>
+  </div>
+</div>
+
+<div class="gallery-modal" id="packageOffersModal" role="dialog" aria-modal="true" aria-label="Package offers">
+  <div class="gallery-modal-backdrop" onclick="closePackageOffers()"></div>
+  <div class="gallery-modal-panel">
+    <button type="button" class="gallery-close" onclick="closePackageOffers()" aria-label="Close">&times;</button>
+    <h3>Packages</h3>
+    <p class="gallery-sub">Current offers and packages — updated regularly.</p>
+    <div class="gallery-grid" id="packageOffersGrid"><!-- filled by script --></div>
   </div>
 </div>
 
@@ -1949,6 +1954,53 @@
     document.getElementById('nonTourModal').classList.remove('is-open');
     document.body.style.overflow = '';
   }
+
+  // ============================================================
+  // PACKAGE OFFERS — dynamic cards Jane creates/edits/deletes from
+  // the dashboard (name, description, photo). Loaded fresh from
+  // Firestore each time this modal opens.
+  // ============================================================
+  function openPackageOffers(){
+    document.getElementById('packageOffersModal').classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    loadPackageOffers();
+  }
+  function closePackageOffers(){
+    document.getElementById('packageOffersModal').classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+  function loadPackageOffers(){
+    const grid = document.getElementById('packageOffersGrid');
+    grid.innerHTML = '<div class="lead-empty">Loading current offers...</div>';
+    if(!window.db){
+      grid.innerHTML = '<div class="lead-empty">Could not connect — try again in a moment.</div>';
+      return;
+    }
+    window.db.collection('packageOffers').orderBy('order', 'asc').get().then(function(snapshot){
+      if(snapshot.empty){
+        grid.innerHTML = '<div class="lead-empty">No packages listed yet — check back soon!</div>';
+        return;
+      }
+      grid.innerHTML = snapshot.docs.map(function(doc){
+        const d = doc.data();
+        const img = d.imageUrl
+          ? `<img src="${d.imageUrl}" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">`
+          : '';
+        return `
+          <div class="gallery-package-card" style="cursor:default;">
+            <div class="gallery-package-thumb">${img}</div>
+            <div class="gallery-package-info">
+              <h4>${(d.name || 'Package').replace(/</g,'&lt;')}</h4>
+              <p>${(d.description || '').replace(/</g,'&lt;')}</p>
+            </div>
+          </div>`;
+      }).join('');
+    }).catch(function(err){
+      grid.innerHTML = '<div class="lead-empty">Could not load packages right now.</div>';
+      console.error('Could not load package offers:', err);
+    });
+  }
+
   function renderNonTourAlbum(){
     const gal = NONTOUR_GALLERIES[currentNonTour];
     document.getElementById('nonTourImage').innerHTML = photoOrScene(gal, currentNonTourPhoto, currentNonTourPhoto * 6);
@@ -2230,6 +2282,7 @@
   document.addEventListener('keydown', function(e){
     const modal = document.getElementById('galleryModal');
     const nonTourModal = document.getElementById('nonTourModal');
+    const packageOffersModal = document.getElementById('packageOffersModal');
     const aboutModal = document.getElementById('aboutModal');
     if(modal.classList.contains('is-open')){
       if(e.key === 'Escape') closeGallery();
@@ -2239,6 +2292,8 @@
       if(e.key === 'Escape') closeNonTourGallery();
       if(e.key === 'ArrowLeft') nonTourPrev();
       if(e.key === 'ArrowRight') nonTourNext();
+    } else if(packageOffersModal.classList.contains('is-open')){
+      if(e.key === 'Escape') closePackageOffers();
     } else if(aboutModal.classList.contains('is-open')){
       if(e.key === 'Escape') closeAboutModal();
     } else if(chatOpen && e.key === 'Escape'){
